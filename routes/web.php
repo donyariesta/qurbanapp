@@ -1,6 +1,15 @@
 <?php
 
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventYearController;
+use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\ProcurementController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicReportController;
+use App\Http\Controllers\QurbanController;
+use App\Http\Controllers\SubmitterController;
+use App\Http\Controllers\TransactionController;
+use App\Models\Event;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,23 +25,48 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+Route::redirect('/', '/reports');
+
+Route::get('/reports', [PublicReportController::class, 'index'])->name('reports.index');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $year = session('selected_event_year');
+        if (! is_numeric($year)) {
+            return null;
+        }
+
+    $event =  Event::query()->where('year', (int) $year)->first();
+
+    return Inertia::render('Dashboard', [
+        'latestEventYear' => $event?->year,
+        'stats' => [
+            'events' => Event::query()->count(),
+            'submitters' => $event?->submitters()->count() ?? 0,
+            'participants' => $event?->participants()->count() ?? 0,
+            'qurbans' => $event?->qurbans()->count() ?? 0,
+            'procurements' => $event?->procurements()->count() ?? 0,
+            'transactions' => $event?->transactions()->count() ?? 0,
+        ],
+        'framework' => [
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+        ],
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/event-year/{year}', [EventYearController::class, 'set'])->name('eventYear.set');
+
+    Route::resource('events', EventController::class)->except(['show', 'create', 'edit']);
+    Route::resource('submitters', SubmitterController::class)->except(['show', 'create', 'edit']);
+    Route::resource('participants', ParticipantController::class)->except(['show', 'create', 'edit']);
+    Route::resource('qurbans', QurbanController::class)->except(['show', 'create', 'edit']);
+    Route::resource('procurements', ProcurementController::class)->except(['show', 'create', 'edit']);
+    Route::resource('transactions', TransactionController::class)->except(['show', 'create', 'edit']);
 });
 
 require __DIR__.'/auth.php';

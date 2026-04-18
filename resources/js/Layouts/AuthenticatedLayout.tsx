@@ -3,11 +3,12 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { User } from '@/types';
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { eventYears, selectedEventYear } = usePage().props as any;
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -16,19 +17,62 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     <div className="flex justify-between h-16">
                         <div className="flex">
                             <div className="shrink-0 flex items-center">
-                                <Link href="/">
+                                <Link href={route('dashboard')}>
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <div className="hidden gap-6 sm:-my-px sm:ms-10 sm:flex sm:flex-wrap">
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
+                                </NavLink>
+                                <NavLink href={route('events.index')} active={route().current('events.*')}>
+                                    Events
+                                </NavLink>
+                                <NavLink href={route('submitters.index')} active={route().current('submitters.*')}>
+                                    Submitters
+                                </NavLink>
+                                <NavLink href={route('participants.index')} active={route().current('participants.*')}>
+                                    Participants
+                                </NavLink>
+                                <NavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
+                                    Qurbans
+                                </NavLink>
+                                <NavLink href={route('procurements.index')} active={route().current('procurements.*')}>
+                                    Procurements
+                                </NavLink>
+                                <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                                    Transactions
+                                </NavLink>
+                                <NavLink href={route('reports.index')} active={route().current('reports.index')}>
+                                    Public Report
                                 </NavLink>
                             </div>
                         </div>
 
                         <div className="hidden sm:flex sm:items-center sm:ms-6">
+                            <div className="me-4">
+                                <select
+                                    value={selectedEventYear ?? ''}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        if (!value) return;
+                                        router.get(route('eventYear.set', { year: Number(value) }));
+                                    }}
+                                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                >
+                                    {eventYears?.length ? (
+                                        eventYears.map((year: number) => (
+                                            <option key={year} value={year}>
+                                                Event {year}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="">No events yet</option>
+                                    )}
+                                </select>
+                            </div>
+
                             <div className="ms-3 relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -93,8 +137,50 @@ export default function Authenticated({ user, header, children }: PropsWithChild
 
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                     <div className="pt-2 pb-3 space-y-1">
+                        <div className="px-4">
+                            <select
+                                value={selectedEventYear ?? ''}
+                                onChange={(event) => {
+                                    const value = event.target.value;
+                                    if (!value) return;
+                                    router.get(route('eventYear.set', { year: Number(value) }));
+                                }}
+                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                            >
+                                {eventYears?.length ? (
+                                    eventYears.map((year: number) => (
+                                        <option key={year} value={year}>
+                                            Event {year}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option value="">No events yet</option>
+                                )}
+                            </select>
+                        </div>
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('events.index')} active={route().current('events.*')}>
+                            Events
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('submitters.index')} active={route().current('submitters.*')}>
+                            Submitters
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('participants.index')} active={route().current('participants.*')}>
+                            Participants
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
+                            Qurbans
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('procurements.index')} active={route().current('procurements.*')}>
+                            Procurements
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                            Transactions
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>
+                            Public Report
                         </ResponsiveNavLink>
                     </div>
 

@@ -8,7 +8,7 @@ import { PageProps } from '@/types';
 export default function Edit({ auth, mustVerifyEmail, status }: PageProps<{ mustVerifyEmail: boolean, status?: string }>) {
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            user={auth.user!}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>}
         >
             <Head title="Profile" />

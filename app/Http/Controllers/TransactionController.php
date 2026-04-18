@@ -1,0 +1,157 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Concerns\BuildsQurbanOptions;
+use App\Http\Controllers\Concerns\ResolvesSelectedEvent;
+use App\Models\Submitter;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class TransactionController extends Controller
+{
+    use BuildsQurbanOptions;
+    use ResolvesSelectedEvent;
+
+    public function index(): Response
+    {
+        $eventId = $this->selectedEventId();
+
+        return Inertia::render('Admin/CrudPage', [
+            'title' => 'Transactions',
+            'singular' => 'Transaction',
+            'routeName' => 'transactions',
+            'fields' => [
+                ['name' => 'submitter_id', 'label' => 'Submitter', 'type' => 'select', 'required' => true, 'optionsKey' => 'submitters'],
+                ['name' => 'amount', 'label' => 'Amount', 'type' => 'number', 'required' => true, 'step' => '0.01'],
+                ['name' => 'date_of_payment', 'label' => 'Date of Payment', 'type' => 'date', 'required' => true],
+                ['name' => 'reference_type', 'label' => 'Reference Type', 'type' => 'select', 'required' => false, 'options' => [
+                    ['value' => '', 'label' => 'None'],
+                    ['value' => 'Submitter', 'label' => 'Submitter'],
+                    ['value' => 'Participant', 'label' => 'Participant'],
+                    ['value' => 'Transaction', 'label' => 'Transaction'],
+                    ['value' => 'Procurement', 'label' => 'Procurement'],
+                ]],
+                ['name' => 'reference_id', 'label' => 'Reference Record ID', 'type' => 'number', 'required' => false],
+            ],
+            'columns' => [
+                ['key' => 'submitter_name', 'label' => 'Submitter'],
+                ['key' => 'amount', 'label' => 'Amount'],
+                ['key' => 'date_of_payment', 'label' => 'Payment Date'],
+                ['key' => 'reference_label', 'label' => 'Reference'],
+            ],
+            'records' => Transaction::query()
+                ->with(['event', 'submitter'])
+                ->orderByDesc('date_of_payment')
+                ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
+                ->get()
+                ->map(fn (Transaction $transaction) => [
+                    'id' => $transaction->transaction_id,
+                    'event_id' => $transaction->event_id,
+                    'submitter_id' => $transaction->submitter_id,
+                    'submitter_name' => $transaction->submitter?->name,
+                    'amount' => $transaction->amount,
+                    'date_of_payment' => optional($transaction->date_of_payment)->format('Y-m-d'),
+                    'reference_id' => $transaction->reference_id,
+                    'reference_type' => $transaction->reference_type,
+                    'reference_label' => $transaction->reference_type && $transaction->reference_id
+                        ? "{$transaction->reference_type} #{$transaction->reference_id}"
+                        : 'None',
+                ])
+                ->all(),
+            'options' => [
+                'submitters' => $this->submitterOptions(),
+            ],
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        $validated = $this->validateData($request);
+        $validated['event_id'] = $eventId;
+
+        Transaction::query()->create($validated);
+
+        return to_route('transactions.index');
+    }
+
+    public function update(Request $request, Transaction $transaction)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        if ($transaction->event_id !== $eventId) {
+            abort(403, 'This transaction does not belong to the selected event.');
+        }
+
+        $validated = $this->validateData($request);
+        $validated['event_id'] = $eventId;
+
+        $transaction->update($validated);
+
+        return to_route('transactions.index');
+    }
+
+    public function destroy(Transaction $transaction)
+    {
+        $eventId = $this->selectedEventId();
+        if ($eventId && $transaction->event_id !== $eventId) {
+            abort(403, 'This transaction does not belong to the selected event.');
+        }
+
+        $transaction->delete();
+
+        return to_route('transactions.index');
+    }
+
+    private function validateData(Request $request): array
+    {
+        $eventId = $this->selectedEventId();
+
+        $validated = $request->validate([
+            'submitter_id' => ['required', 'exists:submitters,submitter_id'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'date_of_payment' => ['required', 'date'],
+            'reference_type' => ['nullable', Rule::in(['Submitter', 'Participant', 'Transaction', 'Procurement'])],
+            'reference_id' => ['nullable', 'integer'],
+        ]);
+
+        $validated['reference_type'] = $validated['reference_type'] ?: null;
+        $validated['reference_id'] = $validated['reference_id'] ?: null;
+
+        $submitter = Submitter::query()->findOrFail($validated['submitter_id']);
+
+        if (! $eventId || $submitter->event_id !== (int) $eventId) {
+            throw ValidationException::withMessages([
+                'submitter_id' => 'The selected submitter does not belong to the selected event.',
+            ]);
+        }
+
+        if (($validated['reference_type'] && ! $validated['reference_id']) || (! $validated['reference_type'] && $validated['reference_id'])) {
+            throw ValidationException::withMessages([
+                'reference_id' => 'Reference type and reference record ID must be filled together.',
+            ]);
+        }
+
+        $reference = $this->resolveReference($validated['reference_type'], $validated['reference_id']);
+
+        if ($reference && (int) $reference->getAttribute('event_id') !== (int) $eventId) {
+            throw ValidationException::withMessages([
+                'reference_id' => 'The selected reference does not belong to the selected event.',
+            ]);
+        }
+
+        return $validated;
+    }
+}

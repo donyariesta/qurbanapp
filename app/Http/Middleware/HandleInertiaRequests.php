@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,11 +30,24 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $years = Event::query()
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->all();
+
+        $selectedYear = $request->session()->get('selected_event_year');
+        if (! $selectedYear && count($years) > 0) {
+            $selectedYear = $years[0];
+            $request->session()->put('selected_event_year', $selectedYear);
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'eventYears' => $years,
+            'selectedEventYear' => $selectedYear,
         ];
     }
 }

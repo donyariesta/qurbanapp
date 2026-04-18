@@ -8,7 +8,7 @@ import { FormEventHandler } from 'react';
 import { PageProps } from '@/types';
 
 export default function UpdateProfileInformation({ mustVerifyEmail, status, className = '' }: { mustVerifyEmail: boolean, status?: string, className?: string }) {
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<PageProps>().props.auth.user!;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         name: user.name,
