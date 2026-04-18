@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\BuildsQurbanOptions;
 use App\Http\Controllers\Concerns\ResolvesSelectedEvent;
 use App\Models\Participant;
 use App\Models\Submitter;
+use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -86,6 +87,30 @@ class SubmitterController extends Controller
                     'qurban_label' => $participant->qurban
                         ? "Qurban #{$participant->qurban->qurban_number} - {$participant->qurban->qurban_type}"
                         : '-',
+                ])
+                ->all(),
+            'paymentSummary' => [
+                'total_owed' => (string) Participant::query()
+                    ->join('qurbans', 'participants.qurban_id', '=', 'qurbans.qurban_id')
+                    ->where('participants.event_id', $eventId)
+                    ->where('participants.submitter_id', $submitter->submitter_id)
+                    ->sum('qurbans.qurban_shared_price'),
+                'total_paid' => (string) Transaction::query()
+                    ->where('event_id', $eventId)
+                    ->where('reference_type', 'Submitter')
+                    ->where('reference_id', $submitter->submitter_id)
+                    ->sum('amount'),
+            ],
+            'payments' => Transaction::query()
+                ->where('event_id', $eventId)
+                ->where('reference_type', 'Submitter')
+                ->where('reference_id', $submitter->submitter_id)
+                ->orderByDesc('date_of_payment')
+                ->get()
+                ->map(fn (Transaction $transaction) => [
+                    'id' => $transaction->transaction_id,
+                    'amount' => $transaction->amount,
+                    'date_of_payment' => optional($transaction->date_of_payment)->format('Y-m-d'),
                 ])
                 ->all(),
             'qurbanOptions' => $this->qurbanOptions(),

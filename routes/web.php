@@ -68,8 +68,14 @@ Route::middleware(['auth', 'route.access'])->group(function () {
     Route::post('submitters/{submitter}/participants', [ParticipantController::class, 'storeForSubmitter'])->name('submitters.participants.store');
     Route::put('submitters/{submitter}/participants/{participant}', [ParticipantController::class, 'updateForSubmitter'])->name('submitters.participants.update');
     Route::delete('submitters/{submitter}/participants/{participant}', [ParticipantController::class, 'destroyForSubmitter'])->name('submitters.participants.destroy');
+    Route::post('submitters/{submitter}/payments', [TransactionController::class, 'storeForSubmitter'])->name('submitters.payments.store');
+    Route::put('submitters/{submitter}/payments/{transaction}', [TransactionController::class, 'updateForSubmitter'])->name('submitters.payments.update');
+    Route::delete('submitters/{submitter}/payments/{transaction}', [TransactionController::class, 'destroyForSubmitter'])->name('submitters.payments.destroy');
     Route::resource('qurbans', QurbanController::class)->except(['show', 'create', 'edit']);
     Route::resource('procurements', ProcurementController::class)->except(['show', 'create', 'edit']);
+    Route::post('procurements/{procurement}/payments', [ProcurementController::class, 'storePayment'])->name('procurements.payments.store');
+    Route::put('procurements/{procurement}/payments/{transaction}', [ProcurementController::class, 'updatePayment'])->name('procurements.payments.update');
+    Route::delete('procurements/{procurement}/payments/{transaction}', [ProcurementController::class, 'destroyPayment'])->name('procurements.payments.destroy');
     Route::resource('transactions', TransactionController::class)->except(['show', 'create', 'edit']);
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
 });

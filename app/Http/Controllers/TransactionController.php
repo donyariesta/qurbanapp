@@ -115,6 +115,89 @@ class TransactionController extends Controller
         return to_route('transactions.index');
     }
 
+    public function storeForSubmitter(Request $request, Submitter $submitter)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        if ($submitter->event_id !== $eventId) {
+            abort(403, 'This submitter does not belong to the selected event.');
+        }
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0'],
+            'date_of_payment' => ['required', 'date'],
+        ]);
+
+        Transaction::query()->create([
+            'event_id' => $eventId,
+            'submitter_id' => $submitter->submitter_id,
+            'amount' => $validated['amount'],
+            'date_of_payment' => $validated['date_of_payment'],
+            'reference_id' => $submitter->submitter_id,
+            'reference_type' => 'Submitter',
+        ]);
+
+        return to_route('submitters.show', $submitter);
+    }
+
+    public function updateForSubmitter(Request $request, Submitter $submitter, Transaction $transaction)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        if ($submitter->event_id !== $eventId) {
+            abort(403, 'This submitter does not belong to the selected event.');
+        }
+
+        if (
+            $transaction->event_id !== $eventId
+            || $transaction->reference_type !== 'Submitter'
+            || (int) $transaction->reference_id !== (int) $submitter->submitter_id
+        ) {
+            abort(403, 'This payment does not belong to the submitter.');
+        }
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0'],
+            'date_of_payment' => ['required', 'date'],
+        ]);
+
+        $transaction->update([
+            'amount' => $validated['amount'],
+            'date_of_payment' => $validated['date_of_payment'],
+            'submitter_id' => $submitter->submitter_id,
+            'reference_id' => $submitter->submitter_id,
+            'reference_type' => 'Submitter',
+        ]);
+
+        return to_route('submitters.show', $submitter);
+    }
+
+    public function destroyForSubmitter(Submitter $submitter, Transaction $transaction)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        if (
+            $transaction->event_id !== $eventId
+            || $transaction->reference_type !== 'Submitter'
+            || (int) $transaction->reference_id !== (int) $submitter->submitter_id
+        ) {
+            abort(403, 'This payment does not belong to the submitter.');
+        }
+
+        $transaction->delete();
+
+        return to_route('submitters.show', $submitter);
+    }
+
     private function validateData(Request $request): array
     {
         $eventId = $this->selectedEventId();
