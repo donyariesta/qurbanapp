@@ -1,4 +1,5 @@
 import { PageProps } from '@/types';
+import { formatRupiah } from '@/lib/currency';
 import { Head, Link, router } from '@inertiajs/react';
 
 interface PublicReportProps extends Record<string, unknown> {
@@ -83,7 +84,7 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                         </div>
                         <div className="rounded-lg bg-white p-6 shadow-sm">
                             <p className="text-sm text-gray-500">Total Cash</p>
-                            <p className="mt-2 text-3xl font-semibold text-gray-900">{summary.total_cash}</p>
+                            <p className="mt-2 text-3xl font-semibold text-gray-900">{formatRupiah(summary.total_cash)}</p>
                         </div>
                     </div>
 
@@ -114,8 +115,8 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                                                 <td className="px-4 py-3 text-sm text-gray-700">{participant.name}</td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{participant.address}</td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{participant.linked_qurban}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-700">{participant.paid_amount}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-700">{participant.required_amount}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(participant.paid_amount)}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(participant.required_amount)}</td>
                                                 <td className="px-4 py-3 text-sm">
                                                     <span
                                                         className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
@@ -145,8 +146,8 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Name</span><span className="text-right">{participant.name}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Address</span><span className="text-right">{participant.address}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Qurban</span><span className="text-right">{participant.linked_qurban}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Paid</span><span className="text-right">{participant.paid_amount}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Required</span><span className="text-right">{participant.required_amount}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Paid</span><span className="text-right">{formatRupiah(participant.paid_amount)}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Required</span><span className="text-right">{formatRupiah(participant.required_amount)}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Status</span><span className="text-right">{participant.payment_status}</span></div>
                                         </div>
                                     </div>
@@ -179,9 +180,9 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                                         procurements.map((procurement) => (
                                             <tr key={`${procurement.item}-${procurement.total}`}>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.item}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-700">{procurement.price}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(procurement.price)}</td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.quantity}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-700">{procurement.total}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(procurement.total)}</td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.notes ?? '-'}</td>
                                             </tr>
                                         ))
@@ -199,9 +200,9 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                                     <div key={`${procurement.item}-${procurement.total}`} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                         <div className="space-y-2 text-sm text-gray-700">
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Item</span><span className="text-right">{procurement.item}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{procurement.price}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{formatRupiah(procurement.price)}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Quantity</span><span className="text-right">{procurement.quantity}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Total</span><span className="text-right">{procurement.total}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Total</span><span className="text-right">{formatRupiah(procurement.total)}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Notes</span><span className="text-right">{procurement.notes ?? '-'}</span></div>
                                         </div>
                                     </div>

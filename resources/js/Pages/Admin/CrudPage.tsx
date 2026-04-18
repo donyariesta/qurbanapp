@@ -1,4 +1,5 @@
 import InputError from '@/Components/InputError';
+import { formatRupiah } from '@/lib/currency';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -61,6 +62,19 @@ export default function CrudPage({
     );
 
     const [editingId, setEditingId] = useState<number | null>(null);
+    const formatValue = (columnKey: string, value: RecordValue) => {
+        if (value === null) {
+            return '-';
+        }
+
+        const currencyPattern = /(amount|price|total)/i;
+        if (currencyPattern.test(columnKey)) {
+            return formatRupiah(value);
+        }
+
+        return value;
+    };
+
     const [showingFormModal, setShowingFormModal] = useState(false);
     const { data, setData, transform, post, put, processing, errors, reset } = useForm(emptyForm);
 
@@ -180,7 +194,7 @@ export default function CrudPage({
                                             <tr key={String(record.id)}>
                                                 {columns.map((column) => (
                                                     <td key={`${record.id}-${column.key}`} className="whitespace-pre-wrap px-4 py-3 text-sm text-gray-700">
-                                                        {record[column.key] ?? '-'}
+                                                        {formatValue(column.key, record[column.key])}
                                                     </td>
                                                 ))}
                                                 <td className="px-4 py-3 text-sm">
@@ -228,7 +242,7 @@ export default function CrudPage({
                                             {columns.map((column) => (
                                                 <div key={`${record.id}-${column.key}`} className="flex items-start justify-between gap-3 text-sm">
                                                     <span className="font-medium text-gray-500">{column.label}</span>
-                                                    <span className="text-right text-gray-800">{record[column.key] ?? '-'}</span>
+                                                    <span className="text-right text-gray-800">{formatValue(column.key, record[column.key])}</span>
                                                 </div>
                                             ))}
                                         </div>

@@ -25,25 +25,42 @@ class ProcurementController extends Controller
                 ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
                 ->orderBy('item')
                 ->get()
-                ->map(fn (Procurement $procurement) => [
-                    'id' => $procurement->procurement_id,
-                    'item' => $procurement->item,
-                    'price' => $procurement->price,
-                    'quantity' => $procurement->quantity,
-                    'notes' => $procurement->notes,
-                    'payments' => Transaction::query()
+                ->map(function (Procurement $procurement) use ($eventId) {
+                    $paidAmount = (float) Transaction::query()
                         ->where('event_id', $eventId)
                         ->where('reference_type', 'Procurement')
                         ->where('reference_id', $procurement->procurement_id)
-                        ->orderByDesc('date_of_payment')
-                        ->get()
-                        ->map(fn (Transaction $payment) => [
-                            'id' => $payment->transaction_id,
-                            'amount' => $payment->amount,
-                            'date_of_payment' => optional($payment->date_of_payment)->format('Y-m-d'),
-                        ])
-                        ->all(),
-                ])
+                        ->sum('amount');
+                    $paidAmount = abs($paidAmount);
+                    $totalAmount = (float) $procurement->price * $procurement->quantity;
+                    $outstandingAmount = max(0, $totalAmount - $paidAmount);
+
+                    return [
+                        'id' => $procurement->procurement_id,
+                        'item' => $procurement->item,
+                        'price' => $procurement->price,
+                        'quantity' => $procurement->quantity,
+                        'notes' => $procurement->notes,
+                        'total_amount' => $totalAmount,
+                        'paid_amount' => $paidAmount,
+                        'outstanding_amount' => $outstandingAmount,
+                        'payment_status' => $outstandingAmount <= 0
+                            ? 'Paid'
+                            : "Outstanding {$outstandingAmount}",
+                        'payments' => Transaction::query()
+                            ->where('event_id', $eventId)
+                            ->where('reference_type', 'Procurement')
+                            ->where('reference_id', $procurement->procurement_id)
+                            ->orderByDesc('date_of_payment')
+                            ->get()
+                            ->map(fn (Transaction $payment) => [
+                                'id' => $payment->transaction_id,
+                                'amount' => abs($payment->amount),
+                                'date_of_payment' => optional($payment->date_of_payment)->format('Y-m-d'),
+                            ])
+                            ->all(),
+                    ];
+                })
                 ->all(),
         ]);
     }
@@ -66,7 +83,7 @@ class ProcurementController extends Controller
 
         Transaction::query()->create([
             'event_id' => $eventId,
-            'amount' => $validated['amount'],
+            'amount' => $validated['amount'] * -1,
             'date_of_payment' => $validated['date_of_payment'],
             'reference_id' => $procurement->procurement_id,
             'reference_type' => 'Procurement',

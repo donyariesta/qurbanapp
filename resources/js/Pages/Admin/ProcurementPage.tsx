@@ -1,4 +1,5 @@
 import InputError from '@/Components/InputError';
+import { formatRupiah } from '@/lib/currency';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -19,6 +20,10 @@ type Procurement = {
     price: string;
     quantity: number;
     notes: string | null;
+    total_amount: number;
+    paid_amount: number;
+    outstanding_amount: number;
+    payment_status: string;
     payments: Payment[];
 };
 
@@ -181,6 +186,8 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Item</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Price</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Quantity</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Total Price</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Notes</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
                                     </tr>
@@ -188,7 +195,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {procurements.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">
+                                            <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
                                                 No records yet.
                                             </td>
                                         </tr>
@@ -196,8 +203,14 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                         procurements.map((procurement) => (
                                             <tr key={procurement.id}>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.item}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-700">{procurement.price}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(procurement.price)}</td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.quantity}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(procurement.total_amount)}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-700">
+                                                    {procurement.outstanding_amount > 0
+                                                        ? `Outstanding ${formatRupiah(procurement.outstanding_amount)}`
+                                                        : 'Paid'}
+                                                </td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.notes ?? '-'}</td>
                                                 <td className="px-4 py-3 text-sm">
                                                     <div className="flex gap-3">
@@ -241,8 +254,10 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                     <div key={procurement.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Item</span><span className="text-right">{procurement.item}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{procurement.price}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{formatRupiah(procurement.price)}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Quantity</span><span className="text-right">{procurement.quantity}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Total Price</span><span className="text-right">{formatRupiah(procurement.total_amount)}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Status</span><span className="text-right">{procurement.outstanding_amount > 0 ? `Outstanding ${formatRupiah(procurement.outstanding_amount)}` : 'Paid'}</span></div>
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Notes</span><span className="text-right">{procurement.notes ?? '-'}</span></div>
                                         </div>
                                         <div className="mt-4 flex flex-wrap gap-3 border-t border-gray-100 pt-3 text-sm">
@@ -352,7 +367,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                 {paymentProcurement?.payments.length ? (
                                     paymentProcurement.payments.map((payment) => (
                                         <tr key={payment.id}>
-                                            <td className="px-4 py-3 text-sm text-gray-700">{payment.amount}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(payment.amount)}</td>
                                             <td className="px-4 py-3 text-sm text-gray-700">{payment.date_of_payment}</td>
                                             <td className="px-4 py-3 text-sm">
                                                 <div className="flex gap-3">
@@ -390,7 +405,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                             paymentProcurement.payments.map((payment) => (
                                 <div key={payment.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                     <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{payment.amount}</span></div>
+                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{formatRupiah(payment.amount)}</span></div>
                                         <div className="flex justify-between"><span className="font-medium text-gray-500">Date</span><span>{payment.date_of_payment}</span></div>
                                     </div>
                                     <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">

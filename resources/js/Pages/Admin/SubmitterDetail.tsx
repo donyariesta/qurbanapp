@@ -1,4 +1,5 @@
 import InputError from '@/Components/InputError';
+import { formatRupiah } from '@/lib/currency';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -288,15 +289,15 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                 <div className="grid gap-4 md:grid-cols-3">
                                     <div className="rounded-md bg-gray-50 p-4">
                                         <p className="text-sm text-gray-500">Total Owed</p>
-                                        <p className="mt-1 text-xl font-semibold text-gray-900">{totalOwed.toFixed(2)}</p>
+                                        <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(totalOwed)}</p>
                                     </div>
                                     <div className="rounded-md bg-gray-50 p-4">
                                         <p className="text-sm text-gray-500">Total Paid</p>
-                                        <p className="mt-1 text-xl font-semibold text-gray-900">{totalPaid.toFixed(2)}</p>
+                                        <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(totalPaid)}</p>
                                     </div>
                                     <div className="rounded-md bg-gray-50 p-4">
                                         <p className="text-sm text-gray-500">Outstanding</p>
-                                        <p className="mt-1 text-xl font-semibold text-gray-900">{outstanding.toFixed(2)}</p>
+                                        <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(outstanding)}</p>
                                     </div>
                                 </div>
 
@@ -325,7 +326,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                             ) : (
                                                 payments.map((payment) => (
                                                     <tr key={payment.id}>
-                                                        <td className="px-4 py-3 text-sm text-gray-700">{payment.amount}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(payment.amount)}</td>
                                                         <td className="px-4 py-3 text-sm text-gray-700">{payment.date_of_payment}</td>
                                                         <td className="px-4 py-3 text-sm">
                                                             <div className="flex gap-3">
@@ -361,7 +362,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                         payments.map((payment) => (
                                             <div key={payment.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                                 <div className="space-y-2 text-sm">
-                                                    <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{payment.amount}</span></div>
+                                                    <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{formatRupiah(payment.amount)}</span></div>
                                                     <div className="flex justify-between"><span className="font-medium text-gray-500">Date</span><span>{payment.date_of_payment}</span></div>
                                                 </div>
                                                 <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">
