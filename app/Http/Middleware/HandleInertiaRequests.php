@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
             ->all();
 
         $selectedYear = $request->session()->get('selected_event_year');
+
         if (! $selectedYear && count($years) > 0) {
             $selectedYear = $years[0];
             $request->session()->put('selected_event_year', $selectedYear);

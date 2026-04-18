@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
@@ -14,7 +13,6 @@ class Transaction extends Model
 
     protected $fillable = [
         'event_id',
-        'submitter_id',
         'amount',
         'date_of_payment',
         'reference_id',
@@ -31,8 +29,4 @@ class Transaction extends Model
         return $this->belongsTo(Event::class, 'event_id', 'event_id');
     }
 
-    public function submitter(): BelongsTo
-    {
-        return $this->belongsTo(Submitter::class, 'submitter_id', 'submitter_id');
-    }
 }

@@ -174,7 +174,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                             </PrimaryButton>
                         </div>
 
-                        <div className="overflow-x-auto">
+                        <div className="hidden overflow-x-auto md:block">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -229,6 +229,30 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div className="space-y-3 p-4 md:hidden">
+                            {procurements.length === 0 ? (
+                                <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                    No records yet.
+                                </div>
+                            ) : (
+                                procurements.map((procurement) => (
+                                    <div key={procurement.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Item</span><span className="text-right">{procurement.item}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{procurement.price}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Quantity</span><span className="text-right">{procurement.quantity}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Notes</span><span className="text-right">{procurement.notes ?? '-'}</span></div>
+                                        </div>
+                                        <div className="mt-4 flex flex-wrap gap-3 border-t border-gray-100 pt-3 text-sm">
+                                            <button type="button" onClick={() => openPaymentModal(procurement)} className="font-medium text-blue-600 hover:text-blue-800">Payments</button>
+                                            <button type="button" onClick={() => startEditing(procurement)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
+                                            <button type="button" onClick={() => destroyProcurement(procurement.id)} className="font-medium text-red-600 hover:text-red-800">Delete</button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
@@ -315,7 +339,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                         </div>
                     </form>
 
-                    <div className="mt-6 overflow-x-auto">
+                    <div className="mt-6 hidden overflow-x-auto md:block">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
@@ -359,6 +383,27 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                 )}
                             </tbody>
                         </table>
+                    </div>
+
+                    <div className="mt-6 space-y-3 md:hidden">
+                        {paymentProcurement?.payments.length ? (
+                            paymentProcurement.payments.map((payment) => (
+                                <div key={payment.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{payment.amount}</span></div>
+                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Date</span><span>{payment.date_of_payment}</span></div>
+                                    </div>
+                                    <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">
+                                        <button type="button" onClick={() => startEditingPayment(payment)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
+                                        <button type="button" onClick={() => destroyPayment(payment.id)} className="font-medium text-red-600 hover:text-red-800">Delete</button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                No payments for this procurement.
+                            </div>
+                        )}
                     </div>
                 </div>
             </Modal>

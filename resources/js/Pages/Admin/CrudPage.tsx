@@ -151,7 +151,7 @@ export default function CrudPage({
                                 Add {singular}
                             </PrimaryButton>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="hidden overflow-x-auto md:block">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -214,6 +214,51 @@ export default function CrudPage({
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div className="space-y-3 p-4 md:hidden">
+                            {records.length === 0 ? (
+                                <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                    No records yet.
+                                </div>
+                            ) : (
+                                records.map((record) => (
+                                    <div key={String(record.id)} className="rounded-lg border border-gray-200 p-4 shadow-sm">
+                                        <div className="space-y-2">
+                                            {columns.map((column) => (
+                                                <div key={`${record.id}-${column.key}`} className="flex items-start justify-between gap-3 text-sm">
+                                                    <span className="font-medium text-gray-500">{column.label}</span>
+                                                    <span className="text-right text-gray-800">{record[column.key] ?? '-'}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-4 flex flex-wrap gap-3 border-t border-gray-100 pt-3 text-sm">
+                                            {detailRouteName && (
+                                                <Link
+                                                    href={route(`${detailRouteName}.show`, Number(record.id))}
+                                                    className="font-medium text-blue-600 hover:text-blue-800"
+                                                >
+                                                    Detail
+                                                </Link>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => startEditing(record)}
+                                                className="font-medium text-indigo-600 hover:text-indigo-800"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => destroy(Number(record.id))}
+                                                className="font-medium text-red-600 hover:text-red-800"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>

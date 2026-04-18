@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\BuildsQurbanOptions;
 use App\Http\Controllers\Concerns\ResolvesSelectedEvent;
 use App\Models\Procurement;
-use App\Models\Submitter;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -65,20 +64,8 @@ class ProcurementController extends Controller
             'date_of_payment' => ['required', 'date'],
         ]);
 
-        $fallbackSubmitter = Submitter::query()
-            ->where('event_id', $eventId)
-            ->orderBy('submitter_id')
-            ->first();
-
-        if (! $fallbackSubmitter) {
-            return back()->withErrors([
-                'payment' => 'At least one submitter is required before recording procurement payments.',
-            ]);
-        }
-
         Transaction::query()->create([
             'event_id' => $eventId,
-            'submitter_id' => $fallbackSubmitter->submitter_id,
             'amount' => $validated['amount'],
             'date_of_payment' => $validated['date_of_payment'],
             'reference_id' => $procurement->procurement_id,

@@ -30,8 +30,4 @@ class Submitter extends Model
         return $this->hasMany(Participant::class, 'submitter_id', 'submitter_id');
     }
 
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(Transaction::class, 'submitter_id', 'submitter_id');
-    }
 }

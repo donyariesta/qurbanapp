@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\BuildsQurbanOptions;
 use App\Http\Controllers\Concerns\ResolvesSelectedEvent;
+use App\Models\Participant;
+use App\Models\Procurement;
 use App\Models\Submitter;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -26,7 +28,6 @@ class TransactionController extends Controller
             'singular' => 'Transaction',
             'routeName' => 'transactions',
             'fields' => [
-                ['name' => 'submitter_id', 'label' => 'Submitter', 'type' => 'select', 'required' => true, 'optionsKey' => 'submitters'],
                 ['name' => 'amount', 'label' => 'Amount', 'type' => 'number', 'required' => true, 'step' => '0.01'],
                 ['name' => 'date_of_payment', 'label' => 'Date of Payment', 'type' => 'date', 'required' => true],
                 ['name' => 'reference_type', 'label' => 'Reference Type', 'type' => 'select', 'required' => false, 'options' => [
@@ -39,21 +40,18 @@ class TransactionController extends Controller
                 ['name' => 'reference_id', 'label' => 'Reference Record ID', 'type' => 'number', 'required' => false],
             ],
             'columns' => [
-                ['key' => 'submitter_name', 'label' => 'Submitter'],
                 ['key' => 'amount', 'label' => 'Amount'],
                 ['key' => 'date_of_payment', 'label' => 'Payment Date'],
                 ['key' => 'reference_label', 'label' => 'Reference'],
             ],
             'records' => Transaction::query()
-                ->with(['event', 'submitter'])
+                ->with('event')
                 ->orderByDesc('date_of_payment')
                 ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
                 ->get()
                 ->map(fn (Transaction $transaction) => [
                     'id' => $transaction->transaction_id,
                     'event_id' => $transaction->event_id,
-                    'submitter_id' => $transaction->submitter_id,
-                    'submitter_name' => $transaction->submitter?->name,
                     'amount' => $transaction->amount,
                     'date_of_payment' => optional($transaction->date_of_payment)->format('Y-m-d'),
                     'reference_id' => $transaction->reference_id,
@@ -63,9 +61,7 @@ class TransactionController extends Controller
                         : 'None',
                 ])
                 ->all(),
-            'options' => [
-                'submitters' => $this->submitterOptions(),
-            ],
+            'options' => [],
         ]);
     }
 
@@ -133,7 +129,6 @@ class TransactionController extends Controller
 
         Transaction::query()->create([
             'event_id' => $eventId,
-            'submitter_id' => $submitter->submitter_id,
             'amount' => $validated['amount'],
             'date_of_payment' => $validated['date_of_payment'],
             'reference_id' => $submitter->submitter_id,
@@ -170,7 +165,6 @@ class TransactionController extends Controller
         $transaction->update([
             'amount' => $validated['amount'],
             'date_of_payment' => $validated['date_of_payment'],
-            'submitter_id' => $submitter->submitter_id,
             'reference_id' => $submitter->submitter_id,
             'reference_type' => 'Submitter',
         ]);
@@ -203,7 +197,6 @@ class TransactionController extends Controller
         $eventId = $this->selectedEventId();
 
         $validated = $request->validate([
-            'submitter_id' => ['required', 'exists:submitters,submitter_id'],
             'amount' => ['required', 'numeric', 'min:0'],
             'date_of_payment' => ['required', 'date'],
             'reference_type' => ['nullable', Rule::in(['Submitter', 'Participant', 'Transaction', 'Procurement'])],
@@ -212,14 +205,6 @@ class TransactionController extends Controller
 
         $validated['reference_type'] = $validated['reference_type'] ?: null;
         $validated['reference_id'] = $validated['reference_id'] ?: null;
-
-        $submitter = Submitter::query()->findOrFail($validated['submitter_id']);
-
-        if (! $eventId || $submitter->event_id !== (int) $eventId) {
-            throw ValidationException::withMessages([
-                'submitter_id' => 'The selected submitter does not belong to the selected event.',
-            ]);
-        }
 
         if (($validated['reference_type'] && ! $validated['reference_id']) || (! $validated['reference_type'] && $validated['reference_id'])) {
             throw ValidationException::withMessages([
@@ -236,5 +221,20 @@ class TransactionController extends Controller
         }
 
         return $validated;
+    }
+
+    protected function resolveReference(?string $type, ?int $id)
+    {
+        if (! $type || ! $id) {
+            return null;
+        }
+
+        return match ($type) {
+            'Submitter' => Submitter::query()->find($id),
+            'Participant' => Participant::query()->find($id),
+            'Procurement' => Procurement::query()->find($id),
+            'Transaction' => Transaction::query()->find($id),
+            default => null,
+        };
     }
 }

@@ -89,7 +89,7 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
 
                     <div className="rounded-lg bg-white p-6 shadow-sm">
                         <h2 className="text-lg font-semibold text-gray-900">Participants</h2>
-                        <div className="mt-4 overflow-x-auto">
+                        <div className="mt-4 hidden overflow-x-auto md:block">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -133,11 +133,31 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                                 </tbody>
                             </table>
                         </div>
+                        <div className="mt-4 space-y-3 md:hidden">
+                            {participants.length === 0 ? (
+                                <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                    No participant data for this event.
+                                </div>
+                            ) : (
+                                participants.map((participant) => (
+                                    <div key={`${participant.name}-${participant.linked_qurban}`} className="rounded-lg border border-gray-200 p-4 shadow-sm">
+                                        <div className="space-y-2 text-sm text-gray-700">
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Name</span><span className="text-right">{participant.name}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Address</span><span className="text-right">{participant.address}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Qurban</span><span className="text-right">{participant.linked_qurban}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Paid</span><span className="text-right">{participant.paid_amount}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Required</span><span className="text-right">{participant.required_amount}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Status</span><span className="text-right">{participant.payment_status}</span></div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
 
                     <div className="rounded-lg bg-white p-6 shadow-sm">
                         <h2 className="text-lg font-semibold text-gray-900">Procurement Details</h2>
-                        <div className="mt-4 overflow-x-auto">
+                        <div className="mt-4 hidden overflow-x-auto md:block">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -168,6 +188,25 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                        <div className="mt-4 space-y-3 md:hidden">
+                            {procurements.length === 0 ? (
+                                <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                    No procurement data for this event.
+                                </div>
+                            ) : (
+                                procurements.map((procurement) => (
+                                    <div key={`${procurement.item}-${procurement.total}`} className="rounded-lg border border-gray-200 p-4 shadow-sm">
+                                        <div className="space-y-2 text-sm text-gray-700">
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Item</span><span className="text-right">{procurement.item}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{procurement.price}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Quantity</span><span className="text-right">{procurement.quantity}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Total</span><span className="text-right">{procurement.total}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Notes</span><span className="text-right">{procurement.notes ?? '-'}</span></div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
