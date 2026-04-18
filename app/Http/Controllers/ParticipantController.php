@@ -7,60 +7,18 @@ use App\Http\Controllers\Concerns\ResolvesSelectedEvent;
 use App\Models\Participant;
 use App\Models\Qurban;
 use App\Models\Submitter;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ParticipantController extends Controller
 {
     use BuildsQurbanOptions;
     use ResolvesSelectedEvent;
 
-    public function index(): Response
+    public function index(): RedirectResponse
     {
-        $eventId = $this->selectedEventId();
-
-        return Inertia::render('Admin/CrudPage', [
-            'title' => 'Participants',
-            'singular' => 'Participant',
-            'routeName' => 'participants',
-            'fields' => [
-                ['name' => 'submitter_id', 'label' => 'Submitter', 'type' => 'select', 'required' => true, 'optionsKey' => 'submitters'],
-                ['name' => 'qurban_id', 'label' => 'Qurban', 'type' => 'select', 'required' => true, 'optionsKey' => 'qurbans'],
-                ['name' => 'first_name', 'label' => 'First Name', 'type' => 'text', 'required' => true],
-                ['name' => 'last_name', 'label' => 'Last Name', 'type' => 'text', 'required' => true],
-                ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'required' => true],
-            ],
-            'columns' => [
-                ['key' => 'full_name', 'label' => 'Name'],
-                ['key' => 'submitter_name', 'label' => 'Submitter'],
-                ['key' => 'qurban_label', 'label' => 'Linked Qurban'],
-                ['key' => 'address', 'label' => 'Address'],
-            ],
-            'records' => Participant::query()
-                ->with(['event', 'submitter', 'qurban'])
-                ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
-                ->orderBy('first_name')
-                ->orderBy('last_name')
-                ->get()
-                ->map(fn (Participant $participant) => [
-                    'id' => $participant->participant_id,
-                    'submitter_id' => $participant->submitter_id,
-                    'qurban_id' => $participant->qurban_id,
-                    'first_name' => $participant->first_name,
-                    'last_name' => $participant->last_name,
-                    'full_name' => $participant->full_name,
-                    'submitter_name' => $participant->submitter?->name,
-                    'qurban_label' => $participant->qurban ? "Qurban #{$participant->qurban->qurban_number} - {$participant->qurban->qurban_type}" : null,
-                    'address' => $participant->address,
-                ])
-                ->all(),
-            'options' => [
-                'submitters' => $this->submitterOptions(),
-                'qurbans' => $this->qurbanOptions(),
-            ],
-        ]);
+        return to_route('submitters.index');
     }
 
     public function store(Request $request)
@@ -109,19 +67,70 @@ class ParticipantController extends Controller
         return to_route('participants.index');
     }
 
-    private function validateData(Request $request): array
+    public function storeForSubmitter(Request $request, Submitter $submitter)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        $this->assertSubmitterBelongsToEvent($submitter, $eventId);
+
+        $validated = $this->validateData($request, $submitter);
+        $validated['event_id'] = $eventId;
+        $validated['submitter_id'] = $submitter->submitter_id;
+
+        Participant::query()->create($validated);
+
+        return to_route('submitters.show', $submitter);
+    }
+
+    public function updateForSubmitter(Request $request, Submitter $submitter, Participant $participant)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        $this->assertSubmitterBelongsToEvent($submitter, $eventId);
+        $this->assertParticipantBelongsToSubmitter($participant, $submitter, $eventId);
+
+        $validated = $this->validateData($request, $submitter);
+        $validated['event_id'] = $eventId;
+        $validated['submitter_id'] = $submitter->submitter_id;
+
+        $participant->update($validated);
+
+        return to_route('submitters.show', $submitter);
+    }
+
+    public function destroyForSubmitter(Submitter $submitter, Participant $participant)
+    {
+        $eventId = $this->selectedEventId();
+        if (! $eventId) {
+            return to_route('events.index');
+        }
+
+        $this->assertSubmitterBelongsToEvent($submitter, $eventId);
+        $this->assertParticipantBelongsToSubmitter($participant, $submitter, $eventId);
+
+        $participant->delete();
+
+        return to_route('submitters.show', $submitter);
+    }
+
+    private function validateData(Request $request, ?Submitter $submitter = null): array
     {
         $eventId = $this->selectedEventId();
 
         $validated = $request->validate([
-            'submitter_id' => ['required', 'exists:submitters,submitter_id'],
             'qurban_id' => ['required', 'exists:qurbans,qurban_id'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string'],
         ]);
 
-        $submitter = Submitter::query()->findOrFail($validated['submitter_id']);
+        $submitter = $submitter ?? Submitter::query()->findOrFail($request->input('submitter_id'));
         $qurban = Qurban::query()->findOrFail($validated['qurban_id']);
 
         if (! $eventId || $submitter->event_id !== (int) $eventId) {
@@ -137,5 +146,19 @@ class ParticipantController extends Controller
         }
 
         return $validated;
+    }
+
+    private function assertSubmitterBelongsToEvent(Submitter $submitter, int $eventId): void
+    {
+        if ($submitter->event_id !== $eventId) {
+            abort(403, 'This submitter does not belong to the selected event.');
+        }
+    }
+
+    private function assertParticipantBelongsToSubmitter(Participant $participant, Submitter $submitter, int $eventId): void
+    {
+        if ($participant->event_id !== $eventId || $participant->submitter_id !== $submitter->submitter_id) {
+            abort(403, 'This participant does not belong to the selected submitter.');
+        }
     }
 }

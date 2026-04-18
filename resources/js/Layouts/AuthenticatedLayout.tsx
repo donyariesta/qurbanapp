@@ -47,11 +47,6 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                         Submitters
                                     </NavLink>
                                 )}
-                                {canAccess('participants.index') && (
-                                    <NavLink href={route('participants.index')} active={route().current('participants.*')}>
-                                        Participants
-                                    </NavLink>
-                                )}
                                 {canAccess('qurbans.index') && (
                                     <NavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
                                         Qurbans
@@ -197,11 +192,6 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                         {canAccess('submitters.index') && (
                             <ResponsiveNavLink href={route('submitters.index')} active={route().current('submitters.*')}>
                                 Submitters
-                            </ResponsiveNavLink>
-                        )}
-                        {canAccess('participants.index') && (
-                            <ResponsiveNavLink href={route('participants.index')} active={route().current('participants.*')}>
-                                Participants
                             </ResponsiveNavLink>
                         )}
                         {canAccess('qurbans.index') && (

@@ -1,9 +1,10 @@
 import InputError from '@/Components/InputError';
+import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEvent, useMemo, useState } from 'react';
 
 type Option = {
@@ -36,6 +37,7 @@ interface CrudPageProps extends Record<string, unknown> {
     columns: Column[];
     records: Array<Record<string, RecordValue>>;
     options: Record<string, Option[]>;
+    detailRouteName?: string;
 }
 
 export default function CrudPage({
@@ -47,6 +49,7 @@ export default function CrudPage({
     columns,
     records,
     options,
+    detailRouteName,
 }: PageProps<CrudPageProps>) {
     const emptyForm = useMemo(
         () =>
@@ -58,6 +61,7 @@ export default function CrudPage({
     );
 
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [showingFormModal, setShowingFormModal] = useState(false);
     const { data, setData, transform, post, put, processing, errors, reset } = useForm(emptyForm);
 
     const selectedLabelMap = useMemo(
@@ -96,6 +100,7 @@ export default function CrudPage({
 
     const startEditing = (record: Record<string, RecordValue>) => {
         setEditingId(Number(record.id));
+        setShowingFormModal(true);
 
         fields.forEach((field) => {
             setData(field.name, (record[field.name] ?? '') as string | number);
@@ -104,6 +109,7 @@ export default function CrudPage({
 
     const cancelEditing = () => {
         setEditingId(null);
+        setShowingFormModal(false);
         reset();
         Object.entries(emptyForm).forEach(([key, value]) => {
             setData(key, value);
@@ -118,6 +124,15 @@ export default function CrudPage({
         router.delete(route(`${routeName}.destroy`, id));
     };
 
+    const openCreateModal = () => {
+        setEditingId(null);
+        setShowingFormModal(true);
+        reset();
+        Object.entries(emptyForm).forEach(([key, value]) => {
+            setData(key, value);
+        });
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user!}
@@ -127,77 +142,15 @@ export default function CrudPage({
 
             <div className="py-10">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="rounded-lg bg-white p-6 shadow-sm">
-                        <div className="mb-6 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    {editingId ? `Edit ${singular}` : `Create ${singular}`}
-                                </h3>
-                                <p className="mt-1 text-sm text-gray-500">
-                                    All management screens are restricted to logged-in users.
-                                </p>
-                            </div>
-                            {editingId && (
-                                <button
-                                    type="button"
-                                    onClick={cancelEditing}
-                                    className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700"
-                                >
-                                    Cancel
-                                </button>
-                            )}
-                        </div>
-
-                        <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
-                            {fields.map((field) => {
-                                const selectOptions = selectedLabelMap[field.name] ?? [];
-
-                                return (
-                                    <div key={field.name} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
-                                        <label className="mb-1 block text-sm font-medium text-gray-700">{field.label}</label>
-                                        {field.type === 'textarea' ? (
-                                            <textarea
-                                                value={String(data[field.name] ?? '')}
-                                                onChange={(event) => setData(field.name, event.target.value)}
-                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                rows={3}
-                                            />
-                                        ) : field.type === 'select' ? (
-                                            <select
-                                                value={String(data[field.name] ?? '')}
-                                                onChange={(event) => setData(field.name, event.target.value)}
-                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            >
-                                                <option value="">Select {field.label}</option>
-                                                {selectOptions.map((option) => (
-                                                    <option key={`${field.name}-${option.value}`} value={String(option.value)}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <TextInput
-                                                type={field.type}
-                                                value={String(data[field.name] ?? '')}
-                                                onChange={(event) => setData(field.name, event.target.value)}
-                                                className="block w-full"
-                                                step={field.step}
-                                            />
-                                        )}
-                                        <InputError message={errors[field.name]} className="mt-2" />
-                                    </div>
-                                );
-                            })}
-
-                            <div className="md:col-span-2">
-                                <PrimaryButton disabled={processing}>
-                                    {editingId ? `Update ${singular}` : `Create ${singular}`}
-                                </PrimaryButton>
-                            </div>
-                        </form>
-                    </div>
-
                     <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+                        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4">
+                            <p className="text-sm text-gray-600">
+                                All management screens are restricted to logged-in users.
+                            </p>
+                            <PrimaryButton type="button" onClick={openCreateModal}>
+                                Add {singular}
+                            </PrimaryButton>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
@@ -232,6 +185,14 @@ export default function CrudPage({
                                                 ))}
                                                 <td className="px-4 py-3 text-sm">
                                                     <div className="flex gap-3">
+                                                        {detailRouteName && (
+                                                            <Link
+                                                                href={route(`${detailRouteName}.show`, Number(record.id))}
+                                                                className="font-medium text-blue-600 hover:text-blue-800"
+                                                            >
+                                                                Detail
+                                                            </Link>
+                                                        )}
                                                         <button
                                                             type="button"
                                                             onClick={() => startEditing(record)}
@@ -257,6 +218,71 @@ export default function CrudPage({
                     </div>
                 </div>
             </div>
+
+            <Modal show={showingFormModal} onClose={cancelEditing} maxWidth="2xl">
+                <div className="p-6">
+                    <div className="mb-6 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            {editingId ? `Edit ${singular}` : `Create ${singular}`}
+                        </h3>
+                        <button
+                            type="button"
+                            onClick={cancelEditing}
+                            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+
+                    <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
+                        {fields.map((field) => {
+                            const selectOptions = selectedLabelMap[field.name] ?? [];
+
+                            return (
+                                <div key={field.name} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">{field.label}</label>
+                                    {field.type === 'textarea' ? (
+                                        <textarea
+                                            value={String(data[field.name] ?? '')}
+                                            onChange={(event) => setData(field.name, event.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            rows={3}
+                                        />
+                                    ) : field.type === 'select' ? (
+                                        <select
+                                            value={String(data[field.name] ?? '')}
+                                            onChange={(event) => setData(field.name, event.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        >
+                                            <option value="">Select {field.label}</option>
+                                            {selectOptions.map((option) => (
+                                                <option key={`${field.name}-${option.value}`} value={String(option.value)}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <TextInput
+                                            type={field.type}
+                                            value={String(data[field.name] ?? '')}
+                                            onChange={(event) => setData(field.name, event.target.value)}
+                                            className="block w-full"
+                                            step={field.step}
+                                        />
+                                    )}
+                                    <InputError message={errors[field.name]} className="mt-2" />
+                                </div>
+                            );
+                        })}
+
+                        <div className="md:col-span-2">
+                            <PrimaryButton disabled={processing}>
+                                {editingId ? `Update ${singular}` : `Create ${singular}`}
+                            </PrimaryButton>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

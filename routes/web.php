@@ -63,8 +63,11 @@ Route::middleware(['auth', 'route.access'])->group(function () {
     Route::get('/event-year/{year}', [EventYearController::class, 'set'])->name('eventYear.set');
 
     Route::resource('events', EventController::class)->except(['show', 'create', 'edit']);
-    Route::resource('submitters', SubmitterController::class)->except(['show', 'create', 'edit']);
+    Route::resource('submitters', SubmitterController::class)->except(['create', 'edit']);
     Route::resource('participants', ParticipantController::class)->except(['show', 'create', 'edit']);
+    Route::post('submitters/{submitter}/participants', [ParticipantController::class, 'storeForSubmitter'])->name('submitters.participants.store');
+    Route::put('submitters/{submitter}/participants/{participant}', [ParticipantController::class, 'updateForSubmitter'])->name('submitters.participants.update');
+    Route::delete('submitters/{submitter}/participants/{participant}', [ParticipantController::class, 'destroyForSubmitter'])->name('submitters.participants.destroy');
     Route::resource('qurbans', QurbanController::class)->except(['show', 'create', 'edit']);
     Route::resource('procurements', ProcurementController::class)->except(['show', 'create', 'edit']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'create', 'edit']);
