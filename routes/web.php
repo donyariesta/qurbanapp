@@ -9,6 +9,7 @@ use App\Http\Controllers\PublicReportController;
 use App\Http\Controllers\QurbanController;
 use App\Http\Controllers\SubmitterController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UserController;
 use App\Models\Event;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -32,7 +33,7 @@ Route::get('/reports', [PublicReportController::class, 'index'])->name('reports.
 Route::get('/dashboard', function () {
     $year = session('selected_event_year');
         if (! is_numeric($year)) {
-            return null;
+            $year = 0;
         }
 
     $event =  Event::query()->where('year', (int) $year)->first();
@@ -52,9 +53,9 @@ Route::get('/dashboard', function () {
             'phpVersion' => PHP_VERSION,
         ],
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'route.access'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'route.access'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -67,6 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('qurbans', QurbanController::class)->except(['show', 'create', 'edit']);
     Route::resource('procurements', ProcurementController::class)->except(['show', 'create', 'edit']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'create', 'edit']);
+    Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
 });
 
 require __DIR__.'/auth.php';

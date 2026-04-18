@@ -4,11 +4,22 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, router, usePage } from '@inertiajs/react';
-import { User } from '@/types';
+import { PageProps, User } from '@/types';
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-    const { eventYears, selectedEventYear } = usePage().props as any;
+    const { eventYears, selectedEventYear, auth } = usePage<PageProps<{ eventYears: number[]; selectedEventYear: number | null }>>().props;
+    const permissions = auth.permissions ?? [];
+    const canAccess = (routeName: string) =>
+        permissions.includes('*') ||
+        permissions.some((pattern) => {
+            if (pattern.endsWith('.*')) {
+                const prefix = pattern.slice(0, -2);
+                return routeName === `${prefix}.index` || routeName.startsWith(`${prefix}.`);
+            }
+
+            return routeName === pattern;
+        });
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -26,24 +37,41 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
                                 </NavLink>
-                                <NavLink href={route('events.index')} active={route().current('events.*')}>
-                                    Events
-                                </NavLink>
-                                <NavLink href={route('submitters.index')} active={route().current('submitters.*')}>
-                                    Submitters
-                                </NavLink>
-                                <NavLink href={route('participants.index')} active={route().current('participants.*')}>
-                                    Participants
-                                </NavLink>
-                                <NavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
-                                    Qurbans
-                                </NavLink>
-                                <NavLink href={route('procurements.index')} active={route().current('procurements.*')}>
-                                    Procurements
-                                </NavLink>
-                                <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
-                                    Transactions
-                                </NavLink>
+                                {canAccess('events.index') && (
+                                    <NavLink href={route('events.index')} active={route().current('events.*')}>
+                                        Events
+                                    </NavLink>
+                                )}
+                                {canAccess('submitters.index') && (
+                                    <NavLink href={route('submitters.index')} active={route().current('submitters.*')}>
+                                        Submitters
+                                    </NavLink>
+                                )}
+                                {canAccess('participants.index') && (
+                                    <NavLink href={route('participants.index')} active={route().current('participants.*')}>
+                                        Participants
+                                    </NavLink>
+                                )}
+                                {canAccess('qurbans.index') && (
+                                    <NavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
+                                        Qurbans
+                                    </NavLink>
+                                )}
+                                {canAccess('procurements.index') && (
+                                    <NavLink href={route('procurements.index')} active={route().current('procurements.*')}>
+                                        Procurements
+                                    </NavLink>
+                                )}
+                                {canAccess('transactions.index') && (
+                                    <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                                        Transactions
+                                    </NavLink>
+                                )}
+                                {canAccess('users.index') && (
+                                    <NavLink href={route('users.index')} active={route().current('users.*')}>
+                                        Users
+                                    </NavLink>
+                                )}
                                 <NavLink href={route('reports.index')} active={route().current('reports.index')}>
                                     Public Report
                                 </NavLink>
@@ -161,24 +189,41 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('events.index')} active={route().current('events.*')}>
-                            Events
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('submitters.index')} active={route().current('submitters.*')}>
-                            Submitters
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('participants.index')} active={route().current('participants.*')}>
-                            Participants
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
-                            Qurbans
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('procurements.index')} active={route().current('procurements.*')}>
-                            Procurements
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('transactions.index')} active={route().current('transactions.*')}>
-                            Transactions
-                        </ResponsiveNavLink>
+                        {canAccess('events.index') && (
+                            <ResponsiveNavLink href={route('events.index')} active={route().current('events.*')}>
+                                Events
+                            </ResponsiveNavLink>
+                        )}
+                        {canAccess('submitters.index') && (
+                            <ResponsiveNavLink href={route('submitters.index')} active={route().current('submitters.*')}>
+                                Submitters
+                            </ResponsiveNavLink>
+                        )}
+                        {canAccess('participants.index') && (
+                            <ResponsiveNavLink href={route('participants.index')} active={route().current('participants.*')}>
+                                Participants
+                            </ResponsiveNavLink>
+                        )}
+                        {canAccess('qurbans.index') && (
+                            <ResponsiveNavLink href={route('qurbans.index')} active={route().current('qurbans.*')}>
+                                Qurbans
+                            </ResponsiveNavLink>
+                        )}
+                        {canAccess('procurements.index') && (
+                            <ResponsiveNavLink href={route('procurements.index')} active={route().current('procurements.*')}>
+                                Procurements
+                            </ResponsiveNavLink>
+                        )}
+                        {canAccess('transactions.index') && (
+                            <ResponsiveNavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                                Transactions
+                            </ResponsiveNavLink>
+                        )}
+                        {canAccess('users.index') && (
+                            <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>
+                                Users
+                            </ResponsiveNavLink>
+                        )}
                         <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>
                             Public Report
                         </ResponsiveNavLink>

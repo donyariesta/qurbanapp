@@ -8,6 +8,20 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    private const OPERATOR_ROUTES = [
+        'dashboard',
+        'reports.index',
+        'profile.*',
+        'password.*',
+        'verification.*',
+        'eventYear.set',
+        'submitters.*',
+        'participants.*',
+        'qurbans.*',
+        'procurements.*',
+        'transactions.*',
+    ];
+
     /**
      * The root template that is loaded on the first page visit.
      *
@@ -41,10 +55,20 @@ class HandleInertiaRequests extends Middleware
             $request->session()->put('selected_event_year', $selectedYear);
         }
 
+        $user = $request->user()?->loadMissing('role');
+        $permissions = [];
+
+        if ($user) {
+            $permissions = $user->isSystemAdmin()
+                ? ['*']
+                : self::OPERATOR_ROUTES;
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'permissions' => $permissions,
             ],
             'eventYears' => $years,
             'selectedEventYear' => $selectedYear,
