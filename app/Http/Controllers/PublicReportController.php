@@ -21,6 +21,8 @@ class PublicReportController extends Controller
             ->all();
 
         $selectedYear = $request->integer('year') ?: ($years[0] ?? null);
+        $participantTypeFilter = $request->string('participant_type')->toString();
+        $participantQurbanNumberFilter = $request->string('participant_qurban_number')->toString();
         $event = $selectedYear
             ? Event::query()->where('year', $selectedYear)->first()
             : null;
@@ -30,7 +32,13 @@ class PublicReportController extends Controller
         $summary = [
             'participant_count' => 0,
             'qurban_count' => 0,
-            'total_cash' => 0,
+            'participant_count_cow' => 0,
+            'participant_count_sheep' => 0,
+            'qurban_count_cow' => 0,
+            'qurban_count_sheep' => 0,
+            'total_cash_received' => 0,
+            'total_spent' => 0,
+            'remaining_cash' => 0,
         ];
 
         if ($event) {
@@ -57,6 +65,14 @@ class PublicReportController extends Controller
             $participants = Participant::query()
                 ->with(['qurban', 'submitter'])
                 ->where('event_id', $event->event_id)
+                ->when(
+                    in_array($participantTypeFilter, ['Cow', 'Sheep'], true),
+                    fn ($query) => $query->whereHas('qurban', fn ($q) => $q->where('qurban_type', $participantTypeFilter))
+                )
+                ->when(
+                    $participantQurbanNumberFilter !== '',
+                    fn ($query) => $query->whereHas('qurban', fn ($q) => $q->where('qurban_number', (int) $participantQurbanNumberFilter))
+                )
                 ->orderBy('first_name')
                 ->orderBy('last_name')
                 ->get()
@@ -71,6 +87,8 @@ class PublicReportController extends Controller
                     return [
                         'name' => $participant->full_name,
                         'address' => $participant->address,
+                        'qurban_type' => $participant->qurban?->qurban_type,
+                        'qurban_number' => $participant->qurban?->qurban_number,
                         'linked_qurban' => $participant->qurban
                             ? "Qurban #{$participant->qurban->qurban_number} - {$participant->qurban->qurban_type}"
                             : '-',
@@ -98,10 +116,46 @@ class PublicReportController extends Controller
                 'participant_count' => Participant::query()
                     ->where('event_id', $event->event_id)
                     ->count(),
+                'participant_count_cow' => Participant::query()
+                    ->join('qurbans', 'participants.qurban_id', '=', 'qurbans.qurban_id')
+                    ->where('participants.event_id', $event->event_id)
+                    ->where('qurbans.qurban_type', 'Cow')
+                    ->count(),
+                'participant_count_sheep' => Participant::query()
+                    ->join('qurbans', 'participants.qurban_id', '=', 'qurbans.qurban_id')
+                    ->where('participants.event_id', $event->event_id)
+                    ->where('qurbans.qurban_type', 'Sheep')
+                    ->count(),
                 'qurban_count' => Qurban::query()
                     ->where('event_id', $event->event_id)
                     ->count(),
-                'total_cash' => number_format(
+                'qurban_count_cow' => Qurban::query()
+                    ->where('event_id', $event->event_id)
+                    ->where('qurban_type', 'Cow')
+                    ->count(),
+                'qurban_count_sheep' => Qurban::query()
+                    ->where('event_id', $event->event_id)
+                    ->where('qurban_type', 'Sheep')
+                    ->count(),
+                'total_cash_received' => number_format(
+                    (float) Transaction::query()
+                        ->where('event_id', $event->event_id)
+                        ->where('amount', '>', 0)
+                        ->sum('amount'),
+                    2,
+                    '.',
+                    ''
+                ),
+                'total_spent' => number_format(
+                    abs((float) Transaction::query()
+                        ->where('event_id', $event->event_id)
+                        ->where('amount', '<', 0)
+                        ->sum('amount')),
+                    2,
+                    '.',
+                    ''
+                ),
+                'remaining_cash' => number_format(
                     (float) Transaction::query()->where('event_id', $event->event_id)->sum('amount'),
                     2,
                     '.',
@@ -113,6 +167,10 @@ class PublicReportController extends Controller
         return Inertia::render('PublicReport', [
             'years' => $years,
             'selectedYear' => $selectedYear,
+            'participantFilters' => [
+                'participant_type' => in_array($participantTypeFilter, ['Cow', 'Sheep'], true) ? $participantTypeFilter : '',
+                'participant_qurban_number' => $participantQurbanNumberFilter,
+            ],
             'summary' => $summary,
             'participants' => $participants->values()->all(),
             'procurements' => $procurements->values()->all(),

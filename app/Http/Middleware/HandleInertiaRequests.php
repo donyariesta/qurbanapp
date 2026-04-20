@@ -18,6 +18,7 @@ class HandleInertiaRequests extends Middleware
         'submitters.*',
         'participants.*',
         'qurbans.*',
+        'meat-yields.*',
         'procurements.*',
         'transactions.*',
     ];

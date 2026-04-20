@@ -5,14 +5,26 @@ import { Head, Link, router } from '@inertiajs/react';
 interface PublicReportProps extends Record<string, unknown> {
     years: number[];
     selectedYear: number | null;
+    participantFilters: {
+        participant_type: string;
+        participant_qurban_number: string;
+    };
     summary: {
         participant_count: number;
         qurban_count: number;
-        total_cash: number | string;
+        participant_count_cow: number;
+        participant_count_sheep: number;
+        qurban_count_cow: number;
+        qurban_count_sheep: number;
+        total_cash_received: number | string;
+        total_spent: number | string;
+        remaining_cash: number | string;
     };
     participants: Array<{
         name: string;
         address: string;
+        qurban_type: string;
+        qurban_number: number;
         linked_qurban: string;
         required_amount: string;
         paid_amount: string;
@@ -27,7 +39,7 @@ interface PublicReportProps extends Record<string, unknown> {
     }>;
 }
 
-export default function PublicReport({ auth, years, selectedYear, summary, participants, procurements }: PageProps<PublicReportProps>) {
+export default function PublicReport({ auth, years, selectedYear, participantFilters, summary, participants, procurements }: PageProps<PublicReportProps>) {
     return (
         <>
             <Head title="Public Report" />
@@ -77,19 +89,55 @@ export default function PublicReport({ auth, years, selectedYear, summary, parti
                         <div className="rounded-lg bg-white p-6 shadow-sm">
                             <p className="text-sm text-gray-500">Number of Participation</p>
                             <p className="mt-2 text-3xl font-semibold text-gray-900">{summary.participant_count}</p>
+                            <p className="mt-2 text-sm text-gray-600">Cow: {summary.participant_count_cow} | Sheep: {summary.participant_count_sheep}</p>
                         </div>
                         <div className="rounded-lg bg-white p-6 shadow-sm">
                             <p className="text-sm text-gray-500">Number of Qurban</p>
                             <p className="mt-2 text-3xl font-semibold text-gray-900">{summary.qurban_count}</p>
+                            <p className="mt-2 text-sm text-gray-600">Cow: {summary.qurban_count_cow} | Sheep: {summary.qurban_count_sheep}</p>
                         </div>
                         <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm text-gray-500">Total Cash</p>
-                            <p className="mt-2 text-3xl font-semibold text-gray-900">{formatRupiah(summary.total_cash)}</p>
+                            <p className="text-sm text-gray-500">Cash Summary</p>
+                            <p className="mt-2 text-sm text-gray-700">Received: {formatRupiah(summary.total_cash_received)}</p>
+                            <p className="text-sm text-gray-700">Spent: {formatRupiah(summary.total_spent)}</p>
+                            <p className="text-sm font-semibold text-gray-900">Remaining: {formatRupiah(summary.remaining_cash)}</p>
                         </div>
                     </div>
 
                     <div className="rounded-lg bg-white p-6 shadow-sm">
-                        <h2 className="text-lg font-semibold text-gray-900">Participants</h2>
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <h2 className="text-lg font-semibold text-gray-900">Participants</h2>
+                            <div className="flex flex-col gap-3 md:flex-row">
+                                <select
+                                    value={participantFilters.participant_type}
+                                    onChange={(event) =>
+                                        router.get(route('reports.index'), {
+                                            year: selectedYear ?? '',
+                                            participant_type: event.target.value,
+                                            participant_qurban_number: participantFilters.participant_qurban_number,
+                                        }, { preserveScroll: true, replace: true })
+                                    }
+                                    className="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                >
+                                    <option value="">Filter by cow/sheep</option>
+                                    <option value="Cow">Cow</option>
+                                    <option value="Sheep">Sheep</option>
+                                </select>
+                                <input
+                                    type="number"
+                                    value={participantFilters.participant_qurban_number}
+                                    placeholder="Filter by qurban number"
+                                    onChange={(event) =>
+                                        router.get(route('reports.index'), {
+                                            year: selectedYear ?? '',
+                                            participant_type: participantFilters.participant_type,
+                                            participant_qurban_number: event.target.value,
+                                        }, { preserveScroll: true, replace: true })
+                                    }
+                                    className="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
                         <div className="mt-4 hidden overflow-x-auto md:block">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">

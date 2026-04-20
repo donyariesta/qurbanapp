@@ -1,4 +1,5 @@
 import InputError from '@/Components/InputError';
+import Checkbox from '@/Components/Checkbox';
 import { formatRupiah } from '@/lib/currency';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -16,8 +17,9 @@ type Option = {
 type Field = {
     name: string;
     label: string;
-    type: 'text' | 'number' | 'date' | 'textarea' | 'select';
+    type: 'text' | 'number' | 'date' | 'textarea' | 'select' | 'checkbox';
     required?: boolean;
+    defaultValue?: string | number;
     step?: string;
     options?: Option[];
     optionsKey?: string;
@@ -55,7 +57,7 @@ export default function CrudPage({
     const emptyForm = useMemo(
         () =>
             fields.reduce<Record<string, string | number>>((carry, field) => {
-                carry[field.name] = '';
+                carry[field.name] = field.defaultValue ?? (field.type === 'checkbox' ? 0 : '');
                 return carry;
             }, {}),
         [fields],
@@ -320,6 +322,14 @@ export default function CrudPage({
                                                 </option>
                                             ))}
                                         </select>
+                                    ) : field.type === 'checkbox' ? (
+                                        <label className="inline-flex items-center gap-2">
+                                            <Checkbox
+                                                checked={Boolean(Number(data[field.name] ?? 0))}
+                                                onChange={(event) => setData(field.name, event.target.checked ? 1 : 0)}
+                                            />
+                                            <span className="text-sm text-gray-700">{field.label}</span>
+                                        </label>
                                     ) : (
                                         <TextInput
                                             type={field.type}

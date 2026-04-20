@@ -14,10 +14,14 @@ class Event extends Model
 
     protected $fillable = [
         'year',
+        'accumulate_cows_yield_meat',
+        'total_pax_distribution',
     ];
 
     protected $casts = [
         'year' => 'integer',
+        'accumulate_cows_yield_meat' => 'boolean',
+        'total_pax_distribution' => 'integer',
     ];
 
     public function submitters(): HasMany

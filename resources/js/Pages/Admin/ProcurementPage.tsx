@@ -1,4 +1,5 @@
 import InputError from '@/Components/InputError';
+import Checkbox from '@/Components/Checkbox';
 import { formatRupiah } from '@/lib/currency';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -42,6 +43,8 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
         price: '',
         quantity: '',
         notes: '',
+        is_paid: false,
+        date_of_payment: '',
     });
 
     const paymentForm = useForm({
@@ -57,6 +60,8 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
             price: '',
             quantity: '',
             notes: '',
+            is_paid: false,
+            date_of_payment: '',
         });
         procurementForm.clearErrors();
     };
@@ -69,6 +74,8 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
             price: String(procurement.price),
             quantity: String(procurement.quantity),
             notes: procurement.notes ?? '',
+            is_paid: false,
+            date_of_payment: '',
         });
         procurementForm.clearErrors();
     };
@@ -311,6 +318,31 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                 rows={3}
                             />
                             <InputError message={procurementForm.errors.notes} className="mt-2" />
+                        </div>
+                        <div className="md:col-span-2">
+                            {!editingId && (
+                                <div className="mb-4">
+                                    <label className="inline-flex items-center gap-2">
+                                        <Checkbox
+                                            checked={procurementForm.data.is_paid}
+                                            onChange={(e) => procurementForm.setData('is_paid', e.target.checked)}
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Paid</span>
+                                    </label>
+                                </div>
+                            )}
+                            {!editingId && procurementForm.data.is_paid && (
+                                <div className="mb-4 max-w-sm">
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Date of Payment</label>
+                                    <TextInput
+                                        type="date"
+                                        value={procurementForm.data.date_of_payment}
+                                        onChange={(e) => procurementForm.setData('date_of_payment', e.target.value)}
+                                        className="block w-full"
+                                    />
+                                    <InputError message={procurementForm.errors.date_of_payment} className="mt-2" />
+                                </div>
+                            )}
                         </div>
                         <div className="md:col-span-2">
                             <PrimaryButton disabled={procurementForm.processing}>

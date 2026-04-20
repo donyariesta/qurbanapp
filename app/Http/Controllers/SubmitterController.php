@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\BuildsQurbanOptions;
 use App\Http\Controllers\Concerns\ResolvesSelectedEvent;
 use App\Models\Participant;
+use App\Models\Qurban;
 use App\Models\Submitter;
 use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +32,8 @@ class SubmitterController extends Controller
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'required' => true],
                 ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'required' => true],
                 ['name' => 'phone_number', 'label' => 'Phone Number', 'type' => 'text', 'required' => true],
+                ['name' => 'qurban_id', 'label' => 'Qurban (for auto participant)', 'type' => 'select', 'required' => false, 'optionsKey' => 'qurbans'],
+                ['name' => 'add_as_participant', 'label' => 'Automatically add as participant', 'type' => 'checkbox', 'defaultValue' => 1],
             ],
             'columns' => [
                 ['key' => 'name', 'label' => 'Name'],
@@ -46,9 +50,13 @@ class SubmitterController extends Controller
                     'name' => $submitter->name,
                     'address' => $submitter->address,
                     'phone_number' => $submitter->phone_number,
+                    'qurban_id' => '',
+                    'add_as_participant' => 1,
                 ])
                 ->all(),
-            'options' => [],
+            'options' => [
+                'qurbans' => $this->qurbanOptions(),
+            ],
         ]);
     }
 
@@ -128,9 +136,35 @@ class SubmitterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string'],
             'phone_number' => ['required', 'string', 'max:30'],
+            'add_as_participant' => ['nullable', 'boolean'],
+            'qurban_id' => [
+                Rule::requiredIf(fn () => $request->boolean('add_as_participant', true)),
+                'nullable',
+                'exists:qurbans,qurban_id',
+            ],
         ]);
 
-        Submitter::query()->create($validated + ['event_id' => $eventId]);
+        $submitter = Submitter::query()->create([
+            'event_id' => $eventId,
+            'name' => $validated['name'],
+            'address' => $validated['address'],
+            'phone_number' => $validated['phone_number'],
+        ]);
+
+        if (($validated['add_as_participant'] ?? true) && isset($validated['qurban_id'])) {
+            $qurban = Qurban::query()
+                ->where('event_id', $eventId)
+                ->findOrFail($validated['qurban_id']);
+
+            Participant::query()->create([
+                'event_id' => $eventId,
+                'submitter_id' => $submitter->submitter_id,
+                'qurban_id' => $qurban->qurban_id,
+                'first_name' => $submitter->name,
+                'last_name' => null,
+                'address' => $submitter->address,
+            ]);
+        }
 
         return to_route('submitters.index');
     }

@@ -156,9 +156,27 @@ class ProcurementController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:1'],
             'notes' => ['nullable', 'string'],
+            'is_paid' => ['nullable', 'boolean'],
+            'date_of_payment' => ['nullable', 'date'],
         ]);
 
-        Procurement::query()->create($validated + ['event_id' => $eventId]);
+        $procurement = Procurement::query()->create([
+            'event_id' => $eventId,
+            'item' => $validated['item'],
+            'price' => $validated['price'],
+            'quantity' => $validated['quantity'],
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        if (($validated['is_paid'] ?? false) === true) {
+            Transaction::query()->create([
+                'event_id' => $eventId,
+                'amount' => ((float) $validated['price'] * (int) $validated['quantity']) * -1,
+                'date_of_payment' => $validated['date_of_payment'] ?? now()->toDateString(),
+                'reference_id' => $procurement->procurement_id,
+                'reference_type' => 'Procurement',
+            ]);
+        }
 
         return to_route('procurements.index');
     }

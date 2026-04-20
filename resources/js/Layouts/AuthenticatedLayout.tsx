@@ -25,6 +25,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
         ...(canAccess('events.index') ? [{ label: 'Events', routeName: 'events.index', active: route().current('events.*') }] : []),
         ...(canAccess('submitters.index') ? [{ label: 'Submitters', routeName: 'submitters.index', active: route().current('submitters.*') }] : []),
         ...(canAccess('qurbans.index') ? [{ label: 'Qurbans', routeName: 'qurbans.index', active: route().current('qurbans.*') }] : []),
+        ...(canAccess('meat-yields.index') ? [{ label: 'Meat Yield', routeName: 'meat-yields.index', active: route().current('meat-yields.*') }] : []),
         ...(canAccess('procurements.index') ? [{ label: 'Procurements', routeName: 'procurements.index', active: route().current('procurements.*') }] : []),
         ...(canAccess('transactions.index') ? [{ label: 'Transactions', routeName: 'transactions.index', active: route().current('transactions.*') }] : []),
         ...(canAccess('users.index') ? [{ label: 'Users', routeName: 'users.index', active: route().current('users.*') }] : []),

@@ -126,7 +126,7 @@ class ParticipantController extends Controller
         $validated = $request->validate([
             'qurban_id' => ['required', 'exists:qurbans,qurban_id'],
             'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
             'address' => ['required', 'string'],
         ]);
 

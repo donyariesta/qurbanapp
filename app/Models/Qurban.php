@@ -36,4 +36,9 @@ class Qurban extends Model
     {
         return $this->hasMany(Participant::class, 'qurban_id', 'qurban_id');
     }
+
+    public function meatYields(): HasMany
+    {
+        return $this->hasMany(MeatYield::class, 'qurban_id', 'qurban_id');
+    }
 }

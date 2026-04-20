@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventYearController;
+use App\Http\Controllers\MeatYieldController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProcurementController;
@@ -73,6 +74,10 @@ Route::middleware(['auth', 'route.access'])->group(function () {
     Route::put('submitters/{submitter}/payments/{transaction}', [TransactionController::class, 'updateForSubmitter'])->name('submitters.payments.update');
     Route::delete('submitters/{submitter}/payments/{transaction}', [TransactionController::class, 'destroyForSubmitter'])->name('submitters.payments.destroy');
     Route::resource('qurbans', QurbanController::class)->except(['show', 'create', 'edit']);
+    Route::get('meat-yields', [MeatYieldController::class, 'index'])->name('meat-yields.index');
+    Route::post('meat-yields/{qurban}', [MeatYieldController::class, 'store'])->name('meat-yields.store');
+    Route::delete('meat-yields/{qurban}/reset', [MeatYieldController::class, 'reset'])->name('meat-yields.reset');
+    Route::put('meat-yields/config/update', [MeatYieldController::class, 'updateConfig'])->name('meat-yields.config.update');
     Route::resource('procurements', ProcurementController::class)->except(['show', 'create', 'edit']);
     Route::post('procurements/{procurement}/payments', [ProcurementController::class, 'storePayment'])->name('procurements.payments.store');
     Route::put('procurements/{procurement}/payments/{transaction}', [ProcurementController::class, 'updatePayment'])->name('procurements.payments.update');

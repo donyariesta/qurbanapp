@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Event;
+use App\Models\MeatYield;
 use App\Models\Participant;
 use App\Models\Procurement;
 use App\Models\Qurban;
@@ -31,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         Event::observe(AuditableObserver::class);
         Submitter::observe(AuditableObserver::class);
         Qurban::observe(AuditableObserver::class);
+        MeatYield::observe(AuditableObserver::class);
         Participant::observe(AuditableObserver::class);
         Procurement::observe(AuditableObserver::class);
         Transaction::observe(AuditableObserver::class);

@@ -19,6 +19,7 @@ class EnsureUserCanAccessRoute
         'submitters.*',
         'participants.*',
         'qurbans.*',
+        'meat-yields.*',
         'procurements.*',
         'transactions.*',
     ];
