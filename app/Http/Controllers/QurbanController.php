@@ -29,14 +29,12 @@ class QurbanController extends Controller
                     ['value' => 'Cow', 'label' => 'Cow'],
                     ['value' => 'Sheep', 'label' => 'Sheep'],
                 ]],
-                ['name' => 'qurban_price', 'label' => 'Qurban Price', 'type' => 'number', 'required' => true, 'step' => '0.01'],
                 ['name' => 'qurban_shared_price', 'label' => 'Qurban Shared Price', 'type' => 'number', 'required' => true, 'step' => '0.01'],
                 ['name' => 'quota', 'label' => 'Quota', 'type' => 'number', 'required' => true],
             ],
             'columns' => [
                 ['key' => 'qurban_number', 'label' => 'Number'],
                 ['key' => 'qurban_type', 'label' => 'Type'],
-                ['key' => 'qurban_price', 'label' => 'Price'],
                 ['key' => 'qurban_shared_price', 'label' => 'Shared Price'],
                 ['key' => 'quota', 'label' => 'Quota'],
             ],
@@ -49,7 +47,6 @@ class QurbanController extends Controller
                     'id' => $qurban->qurban_id,
                     'qurban_number' => $qurban->qurban_number,
                     'qurban_type' => $qurban->qurban_type,
-                    'qurban_price' => $qurban->qurban_price,
                     'qurban_shared_price' => $qurban->qurban_shared_price,
                     'quota' => $qurban->quota,
                 ])
@@ -118,7 +115,6 @@ class QurbanController extends Controller
                     ->ignore($qurban?->qurban_id, 'qurban_id'),
             ],
             'qurban_type' => ['required', Rule::in(['Cow', 'Sheep'])],
-            'qurban_price' => ['required', 'numeric', 'min:0'],
             'qurban_shared_price' => ['required', 'numeric', 'min:0'],
             'quota' => ['required', 'integer', 'min:1'],
         ]);

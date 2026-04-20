@@ -20,15 +20,18 @@ class DevSystemAdminSeeder extends Seeder
             return;
         }
 
+        $username = env('DEV_SYSTEM_ADMIN_USERNAME', 'dev-admin');
         $email = env('DEV_SYSTEM_ADMIN_EMAIL', 'dev-admin@example.com');
         $password = env('DEV_SYSTEM_ADMIN_PASSWORD', 'dev-admin-password');
 
         User::query()->updateOrCreate(
-            ['email' => $email],
+            ['username' => $username],
             [
                 'name' => 'System Administrator',
+                'email' => $email,
                 'password' => Hash::make($password),
                 'role_id' => $adminRole->id,
+                'is_active' => true,
                 'email_verified_at' => now(),
             ]
         );

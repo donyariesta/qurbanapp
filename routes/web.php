@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventYearController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProcurementController;
 use App\Http\Controllers\ProfileController;
@@ -78,6 +79,7 @@ Route::middleware(['auth', 'route.access'])->group(function () {
     Route::delete('procurements/{procurement}/payments/{transaction}', [ProcurementController::class, 'destroyPayment'])->name('procurements.payments.destroy');
     Route::resource('transactions', TransactionController::class)->except(['show', 'create', 'edit']);
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 });
 
 require __DIR__.'/auth.php';

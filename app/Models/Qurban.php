@@ -17,14 +17,12 @@ class Qurban extends Model
         'event_id',
         'qurban_number',
         'qurban_type',
-        'qurban_price',
         'qurban_shared_price',
         'quota',
     ];
 
     protected $casts = [
         'qurban_number' => 'integer',
-        'qurban_price' => 'decimal:2',
         'qurban_shared_price' => 'decimal:2',
         'quota' => 'integer',
     ];
