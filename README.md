@@ -64,3 +64,49 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Docker setup
+
+This project includes a Docker-based development stack for Laravel, React/Vite, and PostgreSQL.
+
+### Services
+
+- `web`: Nginx serving the Laravel app at `http://localhost:8000`
+- `app`: PHP 8.3 FPM container with Composer and PostgreSQL extensions
+- `frontend`: Node 20 container running the Vite dev server at `http://localhost:5173`
+- `db`: PostgreSQL 16 database exposed on `localhost:5432`
+
+### Start the project
+
+1. Copy the Docker environment file:
+
+```bash
+cp .env.docker.example .env
+```
+
+PowerShell equivalent:
+
+```powershell
+Copy-Item .env.docker.example .env
+```
+
+2. Build and start the containers:
+
+```bash
+docker compose up --build
+```
+
+3. Run the database migrations:
+
+```bash
+docker compose exec app php artisan migrate
+```
+
+### Useful commands
+
+```bash
+docker compose exec app php artisan test
+docker compose exec app php artisan migrate:fresh --seed
+docker compose exec frontend npm run build
+docker compose down
+```
