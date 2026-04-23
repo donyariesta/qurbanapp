@@ -1,18 +1,19 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
+import QurbanBrand from '@/Components/QurbanBrand';
 import { PropsWithChildren } from 'react';
 
 export default function Guest({ children }: PropsWithChildren) {
     return (
-        <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="w-20 h-20 fill-current text-gray-500" />
-                </Link>
-            </div>
+        <div className="flex min-h-screen flex-col bg-[#f9fafb]">
+            <header className="border-b border-gray-200 bg-white shadow-sm">
+                <div className="mx-auto flex max-w-md items-center justify-center px-4 py-5 sm:max-w-lg">
+                    <QurbanBrand href={route('reports.index')} />
+                </div>
+            </header>
 
-            <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {children}
+            <div className="flex flex-1 flex-col items-center px-4 py-8 sm:justify-center sm:px-6 sm:py-10">
+                <div className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md ring-1 ring-gray-100">
+                    {children}
+                </div>
             </div>
         </div>
     );

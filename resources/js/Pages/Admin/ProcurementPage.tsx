@@ -1,6 +1,6 @@
 import InputError from '@/Components/InputError';
 import Checkbox from '@/Components/Checkbox';
-import { formatRupiah } from '@/lib/currency';
+import { formatRupiah } from '@/lib/formator';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';

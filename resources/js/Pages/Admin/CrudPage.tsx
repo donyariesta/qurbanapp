@@ -1,6 +1,6 @@
 import InputError from '@/Components/InputError';
 import Checkbox from '@/Components/Checkbox';
-import { formatRupiah } from '@/lib/currency';
+import { formatRupiah } from '@/lib/formator';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -164,7 +164,7 @@ export default function CrudPage({
                                 All management screens are restricted to logged-in users.
                             </p>
                             <PrimaryButton type="button" onClick={openCreateModal}>
-                                Add {singular}
+                                Tambah {singular}
                             </PrimaryButton>
                         </div>
                         <div className="hidden overflow-x-auto md:block">
@@ -221,7 +221,7 @@ export default function CrudPage({
                                                             onClick={() => destroy(Number(record.id))}
                                                             className="font-medium text-red-600 hover:text-red-800"
                                                         >
-                                                            Delete
+                                                            Hapus
                                                         </button>
                                                     </div>
                                                 </td>

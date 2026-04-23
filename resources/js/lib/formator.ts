@@ -7,3 +7,13 @@ export function formatRupiah(value: number | string | null | undefined): string 
         minimumFractionDigits: 0,
     }).format(Math.round(safeNumber))}`;
 }
+
+export function formatQurban(type: string, value: number | string | null | undefined): string {
+    if (type === 'Cow') {
+        return `Sapi #${value}`;
+    } else if (type === 'Sheep') {
+        return `Domba #${value}`;
+    }
+
+    return `${type} #${value}`;
+}

@@ -20,22 +20,22 @@ class QurbanController extends Controller
         $eventId = $this->selectedEventId();
 
         return Inertia::render('Admin/CrudPage', [
-            'title' => 'Qurbans',
-            'singular' => 'Qurban',
+            'title' => 'Hewan Qurban',
+            'singular' => 'Hewan Qurban',
             'routeName' => 'qurbans',
             'fields' => [
-                ['name' => 'qurban_number', 'label' => 'Qurban Number', 'type' => 'number', 'required' => true],
-                ['name' => 'qurban_type', 'label' => 'Qurban Type', 'type' => 'select', 'required' => true, 'options' => [
-                    ['value' => 'Cow', 'label' => 'Cow'],
-                    ['value' => 'Sheep', 'label' => 'Sheep'],
+                ['name' => 'qurban_number', 'label' => 'Nomor Qurban', 'type' => 'number', 'required' => true],
+                ['name' => 'qurban_type', 'label' => 'Jenis Hewan', 'type' => 'select', 'required' => true, 'options' => [
+                    ['value' => 'Cow', 'label' => 'Sapi'],
+                    ['value' => 'Sheep', 'label' => 'Domba'],
                 ]],
-                ['name' => 'qurban_shared_price', 'label' => 'Qurban Shared Price', 'type' => 'number', 'required' => true, 'step' => '0.01'],
+                ['name' => 'qurban_shared_price', 'label' => 'Harga per Peserta', 'type' => 'number', 'required' => true, 'step' => '0.01'],
                 ['name' => 'quota', 'label' => 'Quota', 'type' => 'number', 'required' => true],
             ],
             'columns' => [
-                ['key' => 'qurban_number', 'label' => 'Number'],
-                ['key' => 'qurban_type', 'label' => 'Type'],
-                ['key' => 'qurban_shared_price', 'label' => 'Shared Price'],
+                ['key' => 'qurban_number', 'label' => 'Nomor Qurban'],
+                ['key' => 'qurban_type', 'label' => 'Jenis Hewan'],
+                ['key' => 'qurban_shared_price', 'label' => 'Harga per Peserta'],
                 ['key' => 'quota', 'label' => 'Quota'],
             ],
             'records' => Qurban::query()

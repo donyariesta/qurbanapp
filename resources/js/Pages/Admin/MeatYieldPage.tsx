@@ -6,17 +6,18 @@ import Checkbox from '@/Components/Checkbox';
 import { Head, router, useForm } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { useMemo, useState } from 'react';
+import { formatQurban } from '@/lib/formator';
 
 type QurbanYield = {
     qurban_id: number;
     qurban_number: number;
     qurban_type: 'Cow' | 'Sheep';
     participant_count: number;
-    gross_total: number;
-    net_total: number;
-    effective_total: number;
+    gross: number;
+    net: number;
     one_third: number;
-    portion_per_participant: number | null;
+    one_third_pax: number;
+    one_third_portion_per_pax: number | null;
     details: Array<{
         meat_yield_id: number;
         weighing_sequence: number;
@@ -28,20 +29,24 @@ type QurbanYield = {
 
 interface MeatYieldPageProps extends Record<string, unknown> {
     summary: {
+        total_pax: number;
         cows?: {
             gross_total: number;
             net_total: number;
-            distribution_two_thirds: number;
-            portion_per_pax: number;
-            participant_one_third_total: number;
-            participant_portion: number | null;
+            two_third_total: number;
+            two_third_portion_per_pax: number;
+            one_third_total: number;
+            one_third_pax_total: number;
+            one_third_portion_per_pax: number;
         };
         sheeps?: {
             gross_total: number;
             net_total: number;
+            two_third_total: number;
+            two_third_portion_per_pax: number;
             distribution_rows: Array<{
                 qurban_number: number;
-                distribution_two_thirds: number;
+                one_third: number;
                 portion_per_pax: number;
             }>;
         };
@@ -54,7 +59,7 @@ interface MeatYieldPageProps extends Record<string, unknown> {
 }
 
 export default function MeatYieldPage({ auth, summary, qurbans, config }: PageProps<MeatYieldPageProps>) {
-    const [tab, setTab] = useState<'summary' | 'weighing' | 'config'>('summary');
+    const [tab, setTab] = useState<'ringkasan' | 'penimbangan' | 'config'>('ringkasan');
     const [activeQurban, setActiveQurban] = useState<QurbanYield | null>(null);
     const [detailQurban, setDetailQurban] = useState<QurbanYield | null>(null);
     const weighingForm = useForm({
@@ -66,16 +71,14 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
         total_pax_distribution: String(config.total_pax_distribution ?? 1),
     });
 
-    const sortedQurbans = useMemo(() => [...qurbans].sort((a, b) => a.qurban_number - b.qurban_number), [qurbans]);
-
     return (
-        <AuthenticatedLayout user={auth.user!} header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Meat Yield</h2>}>
-            <Head title="Meat Yield" />
+        <AuthenticatedLayout user={auth.user!} header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Hasil Daging</h2>}>
+            <Head title="Hasil Daging" />
             <div className="py-10">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="rounded-lg bg-white p-4 shadow-sm">
                         <div className="flex gap-2">
-                            {(['summary', 'weighing', 'config'] as const).map((item) => (
+                            {(['ringkasan', 'penimbangan', 'config'] as const).map((item) => (
                                 <button key={item} type="button" onClick={() => setTab(item)} className={`rounded-md px-4 py-2 text-sm font-medium ${tab === item ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
                                     {item[0].toUpperCase() + item.slice(1)}
                                 </button>
@@ -83,58 +86,60 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                         </div>
                     </div>
 
-                    {tab === 'summary' && (
+                    {tab === 'ringkasan' && (
                         <div className="space-y-6">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="rounded-lg bg-white p-6 shadow-sm">
-                                    <h3 className="font-semibold text-gray-900">Cows</h3>
-                                    <p className="mt-2 text-sm text-gray-700">Gross: {summary.cows?.gross_total ?? 0}</p>
-                                    <p className="text-sm text-gray-700">Net: {summary.cows?.net_total ?? 0}</p>
-                                    <p className="text-sm text-gray-700">2/3 Distribution: {summary.cows?.distribution_two_thirds ?? 0}</p>
-                                    <p className="text-sm text-gray-700">Portion per pax: {summary.cows?.portion_per_pax ?? 0}</p>
+                                    <h3 className="font-semibold text-gray-900">Distribusi Daging Sapi</h3>
+                                    <p className="mt-2 text-sm text-gray-700">Kotor: <b>{summary.cows?.gross_total ?? 0} kg</b></p>
+                                    <p className="text-sm text-gray-700">Bersih: <b>{summary.cows?.net_total ?? 0} kg</b></p>
                                     {config.accumulate_cows_yield_meat && (
                                         <>
-                                            <p className="text-sm text-gray-700">1/3 Participants total: {summary.cows?.participant_one_third_total ?? 0}</p>
-                                            <p className="text-sm text-gray-700">1/3 Portion per participant: {summary.cows?.participant_portion ?? 0}</p>
+                                            <p className="text-sm text-gray-700">Distribusi 1/3 Bagian: <b>{summary.cows?.one_third_portion_per_pax ?? 0} kg</b> per pax ({summary.cows?.one_third_total ?? 0} kg / {summary.cows?.one_third_pax_total ?? 0} peserta)</p>
                                         </>
                                     )}
+                                    <p className="text-sm text-gray-700">Distribusi 2/3 Bagian: <b>{summary.cows?.two_third_portion_per_pax ?? 0} kg</b> per pax ({summary.cows?.two_third_total ?? 0} kg / {summary.total_pax} pax)</p>
                                 </div>
                                 <div className="rounded-lg bg-white p-6 shadow-sm">
-                                    <h3 className="font-semibold text-gray-900">Sheeps</h3>
-                                    <p className="mt-2 text-sm text-gray-700">Gross: {summary.sheeps?.gross_total ?? 0}</p>
-                                    <p className="text-sm text-gray-700">Net: {summary.sheeps?.net_total ?? 0}</p>
-                                    <div className="mt-3 space-y-2 text-sm text-gray-700">
-                                        {(summary.sheeps?.distribution_rows ?? []).map((row) => (
-                                            <div key={row.qurban_number}>
-                                                Sheep #{row.qurban_number}: 2/3 {row.distribution_two_thirds}, per pax {row.portion_per_pax}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <h3 className="font-semibold text-gray-900">Distribusi Daging Domba</h3>
+                                    <p className="mt-2 text-sm text-gray-700">Kotor: <b>{summary.sheeps?.gross_total ?? 0} kg</b></p>
+                                    <p className="text-sm text-gray-700">Bersih: <b>{summary.sheeps?.net_total ?? 0} kg</b></p>
+                                    <p className="text-sm text-gray-700">Distribusi 2/3 Bagian: <b>{summary.sheeps?.two_third_portion_per_pax ?? 0} kg</b> per pax ({summary.sheeps?.two_third_total ?? 0} kg / {summary.total_pax} pax)</p>
+                                    <p className="text-sm text-gray-700 pt-4">
+                                        <b>Distribusi 1/3 Bagian:</b>
+                                        <ul>
+                                            {(summary.sheeps?.distribution_rows ?? []).map((row) => (
+                                                <li key={row.qurban_number}>
+                                                    {formatQurban('Sheep', row.qurban_number)}: <b>{row.one_third} kg</b>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="rounded-lg bg-white p-6 shadow-sm">
-                                <h3 className="mb-4 font-semibold text-gray-900">Qurban Meat Yield</h3>
+                                <h3 className="mb-4 font-semibold text-gray-900">Detil Hasil Daging Qurban</h3>
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Qurban</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Net</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Gross</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">1/3</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Portion/Participant</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Bersih</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Kotor</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Distribusi 1/3 Bagian</th>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 bg-white">
-                                            {sortedQurbans.map((qurban) => (
+                                            {qurbans.map((qurban) => (
                                                 <tr key={qurban.qurban_id}>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">#{qurban.qurban_number} - {qurban.qurban_type}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.net_total}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.gross_total}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.one_third}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.portion_per_participant ?? 'None'}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{formatQurban(qurban.qurban_type, qurban.qurban_number)}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.net} kg</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.gross} kg</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">
+                                                        <b>{qurban.one_third_portion_per_pax ?? 'None'}</b> <small>{qurban.qurban_type === 'Cow' && `(${qurban.one_third} / ${qurban.one_third_pax} peserta)`}</small>
+                                                    </td>
                                                     <td className="px-4 py-3 text-sm">
                                                         <div className="flex gap-3">
                                                             <button
@@ -146,7 +151,7 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                                                     }
                                                                 }}
                                                             >
-                                                                Reset Weighing
+                                                                Reset Penimbangan
                                                             </button>
                                                             <button type="button" className="font-medium text-indigo-600 hover:text-indigo-800" onClick={() => setDetailQurban(qurban)}>
                                                                 Detail
@@ -162,14 +167,13 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                         </div>
                     )}
 
-                    {tab === 'weighing' && (
+                    {tab === 'penimbangan' && (
                         <div className="rounded-lg bg-white p-6 shadow-sm">
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {sortedQurbans.map((qurban) => (
+                                {qurbans.map((qurban) => (
                                     <button key={qurban.qurban_id} type="button" onClick={() => setActiveQurban(qurban)} className="rounded-lg border border-indigo-200 bg-indigo-50 p-6 text-left hover:bg-indigo-100">
-                                        <p className="text-lg font-semibold text-indigo-900">Qurban #{qurban.qurban_number}</p>
-                                        <p className="text-sm text-indigo-700">{qurban.qurban_type}</p>
-                                        <p className="mt-2 text-xs text-indigo-600">Tap to add weighing</p>
+                                        <p className="text-lg font-semibold text-indigo-900">{formatQurban(qurban.qurban_type, qurban.qurban_number)}</p>
+                                        <p className="mt-2 text-xs text-indigo-600">Input penimbangan</p>
                                     </button>
                                 ))}
                             </div>
@@ -190,10 +194,10 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                         checked={configForm.data.accumulate_cows_yield_meat}
                                         onChange={(e) => configForm.setData('accumulate_cows_yield_meat', e.target.checked)}
                                     />
-                                    <span className="text-sm font-medium text-gray-700">Accumulate cows yield meat</span>
+                                    <span className="text-sm font-medium text-gray-700">Akumulasi hasil daging sapi</span>
                                 </label>
                                 <div className="max-w-sm">
-                                    <label className="mb-1 block text-sm font-medium text-gray-700">Total pax distribution</label>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Total pax distribusi</label>
                                     <TextInput
                                         type="number"
                                         min="1"
@@ -202,7 +206,7 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                         className="block w-full"
                                     />
                                 </div>
-                                <PrimaryButton disabled={configForm.processing}>Save Config</PrimaryButton>
+                                <PrimaryButton disabled={configForm.processing}>Simpan Config</PrimaryButton>
                             </form>
                         </div>
                     )}
@@ -211,7 +215,7 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
 
             <Modal show={!!activeQurban} onClose={() => setActiveQurban(null)} maxWidth="md">
                 <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900">Add Meat Yield {activeQurban ? `for Qurban #${activeQurban.qurban_number}` : ''}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Tambah Hasil Daging {activeQurban ? `untuk ${formatQurban(activeQurban.qurban_type, activeQurban.qurban_number)}` : ''}</h3>
                     <form
                         className="mt-4 space-y-4"
                         onSubmit={(event) => {
@@ -227,32 +231,32 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                         }}
                     >
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Weigh</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Bobot</label>
                             <TextInput type="number" step="0.01" min="0.01" value={weighingForm.data.weigh} onChange={(e) => weighingForm.setData('weigh', e.target.value)} className="block w-full" />
                         </div>
                         <div>
                             <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
                             <div className="flex gap-3">
-                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'gross' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'gross')}>Gross</button>
-                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'net' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'net')}>Net</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'gross' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'gross')}>Kotor</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'net' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'net')}>Bersih</button>
                             </div>
                         </div>
-                        <PrimaryButton disabled={weighingForm.processing}>Save Weighing</PrimaryButton>
+                        <PrimaryButton disabled={weighingForm.processing}>Simpan Bobot</PrimaryButton>
                     </form>
                 </div>
             </Modal>
 
             <Modal show={!!detailQurban} onClose={() => setDetailQurban(null)} maxWidth="2xl">
                 <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900">Weighing Details {detailQurban ? `for Qurban #${detailQurban.qurban_number}` : ''}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Detil timbangan {detailQurban ? `untuk ${formatQurban(detailQurban.qurban_type, detailQurban.qurban_number)}` : ''}</h3>
                     <div className="mt-4 overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Seq</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Ke</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Status</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Weight</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Timestamp</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Bobot</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Waktu</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">

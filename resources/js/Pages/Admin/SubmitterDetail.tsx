@@ -1,5 +1,5 @@
 import InputError from '@/Components/InputError';
-import { formatRupiah } from '@/lib/currency';
+import { formatRupiah } from '@/lib/formator';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -169,7 +169,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
     return (
         <AuthenticatedLayout
             user={auth.user!}
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Submitter Detail</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Detil Peserta</h2>}
         >
             <Head title={`Submitter - ${submitter.name}`} />
 
@@ -196,14 +196,14 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                     onClick={() => setActiveTab('participants')}
                                     className={`rounded-md px-4 py-2 text-sm font-medium ${activeTab === 'participants' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                                 >
-                                    Participants
+                                    Sohibul Qurban
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setActiveTab('payments')}
                                     className={`rounded-md px-4 py-2 text-sm font-medium ${activeTab === 'payments' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                                 >
-                                    Payments
+                                    Pembayaran
                                 </button>
                             </div>
                         </div>
@@ -211,16 +211,16 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                             <>
                                 <div className="flex justify-end px-4 py-4">
                                     <PrimaryButton type="button" onClick={openCreateModal}>
-                                        Add Participant
+                                        Tambah Sohibul Qurban
                                     </PrimaryButton>
                                 </div>
                                 <div className="hidden overflow-x-auto md:block">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Name</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Address</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Linked Qurban</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Nama</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Alamat</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Hewan Qurban</th>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
                                             </tr>
                                         </thead>
@@ -228,7 +228,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                             {participants.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500">
-                                                        No participants yet.
+                                                        Belum ada sohibul qurban.
                                                     </td>
                                                 </tr>
                                             ) : (
@@ -265,15 +265,15 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                 <div className="space-y-3 p-4 md:hidden">
                                     {participants.length === 0 ? (
                                         <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
-                                            No participants yet.
+                                            Belum ada sohibul qurban.
                                         </div>
                                     ) : (
                                         participants.map((participant) => (
                                             <div key={participant.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                                 <div className="space-y-2 text-sm">
-                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Name</span><span className="text-right">{participant.full_name}</span></div>
-                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Address</span><span className="text-right">{participant.address}</span></div>
-                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Qurban</span><span className="text-right">{participant.qurban_label}</span></div>
+                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Nama</span><span className="text-right">{participant.full_name}</span></div>
+                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Alamat</span><span className="text-right">{participant.address}</span></div>
+                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Hewan Qurban</span><span className="text-right">{participant.qurban_label}</span></div>
                                                 </div>
                                                 <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">
                                                     <button type="button" onClick={() => startEditing(participant)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
@@ -288,22 +288,22 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                             <div className="space-y-4 p-4">
                                 <div className="grid gap-4 md:grid-cols-3">
                                     <div className="rounded-md bg-gray-50 p-4">
-                                        <p className="text-sm text-gray-500">Total Owed</p>
+                                        <p className="text-sm text-gray-500">Tagihan</p>
                                         <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(totalOwed)}</p>
                                     </div>
                                     <div className="rounded-md bg-gray-50 p-4">
-                                        <p className="text-sm text-gray-500">Total Paid</p>
+                                        <p className="text-sm text-gray-500">Sudah dibayar</p>
                                         <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(totalPaid)}</p>
                                     </div>
                                     <div className="rounded-md bg-gray-50 p-4">
-                                        <p className="text-sm text-gray-500">Outstanding</p>
+                                        <p className="text-sm text-gray-500">Sisa</p>
                                         <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(outstanding)}</p>
                                     </div>
                                 </div>
 
                                 <div className="flex justify-end">
                                     <PrimaryButton type="button" onClick={openCreatePaymentModal}>
-                                        Add Payment
+                                        Tambah Pembayaran
                                     </PrimaryButton>
                                 </div>
 
@@ -311,8 +311,8 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Amount</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Jumlah</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Tanggal</th>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
                                             </tr>
                                         </thead>
@@ -320,7 +320,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                             {payments.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
-                                                        No payments yet.
+                                                        Belum ada pembayaran
                                                     </td>
                                                 </tr>
                                             ) : (
@@ -356,14 +356,14 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                 <div className="space-y-3 md:hidden">
                                     {payments.length === 0 ? (
                                         <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
-                                            No payments yet.
+                                            Belum ada pembayaran
                                         </div>
                                     ) : (
                                         payments.map((payment) => (
                                             <div key={payment.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                                 <div className="space-y-2 text-sm">
-                                                    <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{formatRupiah(payment.amount)}</span></div>
-                                                    <div className="flex justify-between"><span className="font-medium text-gray-500">Date</span><span>{payment.date_of_payment}</span></div>
+                                                    <div className="flex justify-between"><span className="font-medium text-gray-500">Jumlah</span><span>{formatRupiah(payment.amount)}</span></div>
+                                                    <div className="flex justify-between"><span className="font-medium text-gray-500">Tanggal</span><span>{payment.date_of_payment}</span></div>
                                                 </div>
                                                 <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">
                                                     <button type="button" onClick={() => startEditingPayment(payment)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
@@ -382,7 +382,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
             <Modal show={showingFormModal} onClose={closeModal} maxWidth="2xl">
                 <div className="p-6">
                     <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Participant' : 'Create Participant'}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Sohibul Qurban' : 'Tambah Sohibul Qurban'}</h3>
                         <button
                             type="button"
                             onClick={closeModal}
@@ -394,7 +394,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
 
                     <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">First Name</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Nama Awal</label>
                             <TextInput
                                 value={data.first_name}
                                 onChange={(event) => setData('first_name', event.target.value)}
@@ -403,7 +403,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                             <InputError message={errors.first_name} className="mt-2" />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Last Name</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Nama Akhir</label>
                             <TextInput
                                 value={data.last_name}
                                 onChange={(event) => setData('last_name', event.target.value)}
@@ -412,7 +412,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                             <InputError message={errors.last_name} className="mt-2" />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Alamat</label>
                             <textarea
                                 value={data.address}
                                 onChange={(event) => setData('address', event.target.value)}
@@ -422,13 +422,13 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                             <InputError message={errors.address} className="mt-2" />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Qurban</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Hewan Qurban</label>
                             <select
                                 value={String(data.qurban_id)}
                                 onChange={(event) => setData('qurban_id', event.target.value)}
                                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
-                                <option value="">Select Qurban</option>
+                                <option value="">Pilih Hewan Qurban</option>
                                 {qurbanOptions.map((option) => (
                                     <option key={option.value} value={String(option.value)}>
                                         {option.label}
@@ -439,7 +439,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                         </div>
                         <div className="md:col-span-2">
                             <PrimaryButton disabled={processing}>
-                                {editingId ? 'Update Participant' : 'Create Participant'}
+                                {editingId ? 'Update' : 'Tambah'}
                             </PrimaryButton>
                         </div>
                     </form>
@@ -449,7 +449,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
             <Modal show={showingPaymentModal} onClose={closePaymentModal} maxWidth="2xl">
                 <div className="p-6">
                     <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">{editingPaymentId ? 'Edit Payment' : 'Add Payment'}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{editingPaymentId ? 'Edit Pembayaran' : 'Tambah Pembayaran'}</h3>
                         <button
                             type="button"
                             onClick={closePaymentModal}
@@ -461,7 +461,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
 
                     <form onSubmit={submitPayment} className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Amount Paid</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Total Pembayaran</label>
                             <TextInput
                                 type="number"
                                 step="0.01"
@@ -472,7 +472,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                             <InputError message={paymentForm.errors.amount} className="mt-2" />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Date of Payment</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Tanggal Pembayaran</label>
                             <TextInput
                                 type="date"
                                 value={paymentForm.data.date_of_payment}
@@ -483,7 +483,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                         </div>
                         <div className="md:col-span-2">
                             <PrimaryButton disabled={paymentForm.processing}>
-                                {editingPaymentId ? 'Update Payment' : 'Add Payment'}
+                                {editingPaymentId ? 'Update' : 'Tambah'}
                             </PrimaryButton>
                         </div>
                     </form>

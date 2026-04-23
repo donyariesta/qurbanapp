@@ -5,10 +5,10 @@ export default function NavLink({ active = false, className = '', children, ...p
         <Link
             {...props}
             className={
-                'inline-flex items-center text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ' +
+                'inline-flex items-center gap-2.5 rounded-lg text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-qurban-600 focus-visible:ring-offset-2 ' +
                 (active
-                    ? 'text-indigo-700 bg-indigo-50 '
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 ') +
+                    ? 'bg-qurban-800 text-white shadow-sm '
+                    : 'text-gray-600 hover:bg-emerald-50 hover:text-qurban-900 ') +
                 className
             }
         >

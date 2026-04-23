@@ -24,21 +24,21 @@ class SubmitterController extends Controller
         $eventId = $this->selectedEventId();
 
         return Inertia::render('Admin/CrudPage', [
-            'title' => 'Submitters',
-            'singular' => 'Submitter',
+            'title' => 'Peserta',
+            'singular' => 'Peserta',
             'routeName' => 'submitters',
             'detailRouteName' => 'submitters',
             'fields' => [
-                ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'required' => true],
-                ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'required' => true],
-                ['name' => 'phone_number', 'label' => 'Phone Number', 'type' => 'text', 'required' => true],
-                ['name' => 'qurban_id', 'label' => 'Qurban (for auto participant)', 'type' => 'select', 'required' => false, 'optionsKey' => 'qurbans'],
-                ['name' => 'add_as_participant', 'label' => 'Automatically add as participant', 'type' => 'checkbox', 'defaultValue' => 1],
+                ['name' => 'name', 'label' => 'Nama', 'type' => 'text', 'required' => true],
+                ['name' => 'address', 'label' => 'Alamat', 'type' => 'textarea', 'required' => true],
+                ['name' => 'phone_number', 'label' => 'Telepon', 'type' => 'text', 'required' => true],
+                ['name' => 'qurban_id', 'label' => 'Hewan Qurban (jika berqurban untuk sendiri)', 'type' => 'select', 'required' => false, 'optionsKey' => 'qurbans'],
+                ['name' => 'add_as_participant', 'label' => 'Berqurban untuk sendiri?', 'type' => 'checkbox', 'defaultValue' => 1],
             ],
             'columns' => [
-                ['key' => 'name', 'label' => 'Name'],
-                ['key' => 'phone_number', 'label' => 'Phone'],
-                ['key' => 'address', 'label' => 'Address'],
+                ['key' => 'name', 'label' => 'Nama'],
+                ['key' => 'phone_number', 'label' => 'Telepon'],
+                ['key' => 'address', 'label' => 'Alamat'],
             ],
             'records' => Submitter::query()
                 ->with('event')
