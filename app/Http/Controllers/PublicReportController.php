@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Support\Formatter;
 
 class PublicReportController extends Controller
 {
@@ -89,9 +90,7 @@ class PublicReportController extends Controller
                         'address' => $participant->address,
                         'qurban_type' => $participant->qurban?->qurban_type,
                         'qurban_number' => $participant->qurban?->qurban_number,
-                        'linked_qurban' => $participant->qurban
-                            ? "Qurban #{$participant->qurban->qurban_number} - {$participant->qurban->qurban_type}"
-                            : '-',
+                        'linked_qurban' => Formatter::qurbanName($participant->qurban?->qurban_number, $participant->qurban?->qurban_type),
                         'required_amount' => number_format($requiredAmount, 2, '.', ''),
                         'paid_amount' => number_format($paidAmount, 2, '.', ''),
                         'payment_status' => $submitterOutstanding <= 0 && (float) ($submitterRequired[$submitterId] ?? 0) > 0

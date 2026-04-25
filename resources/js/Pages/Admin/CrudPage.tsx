@@ -23,6 +23,7 @@ type Field = {
     step?: string;
     options?: Option[];
     optionsKey?: string;
+    createOnly?: boolean;
 };
 
 type Column = {
@@ -160,9 +161,6 @@ export default function CrudPage({
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="overflow-hidden rounded-lg bg-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4">
-                            <p className="text-sm text-gray-600">
-                                All management screens are restricted to logged-in users.
-                            </p>
                             <PrimaryButton type="button" onClick={openCreateModal}>
                                 Tambah {singular}
                             </PrimaryButton>
@@ -284,7 +282,7 @@ export default function CrudPage({
                 <div className="p-6">
                     <div className="mb-6 flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">
-                            {editingId ? `Edit ${singular}` : `Create ${singular}`}
+                            {editingId ? `Edit ${singular}` : `Buat ${singular}`}
                         </h3>
                         <button
                             type="button"
@@ -297,6 +295,10 @@ export default function CrudPage({
 
                     <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
                         {fields.map((field) => {
+                            if (field.createOnly && editingId) {
+                                return null;
+                            }
+
                             const selectOptions = selectedLabelMap[field.name] ?? [];
 
                             return (
@@ -346,7 +348,7 @@ export default function CrudPage({
 
                         <div className="md:col-span-2">
                             <PrimaryButton disabled={processing}>
-                                {editingId ? `Update ${singular}` : `Create ${singular}`}
+                                {editingId ? `Update ${singular}` : `Buat ${singular}`}
                             </PrimaryButton>
                         </div>
                     </form>

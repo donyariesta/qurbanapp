@@ -3,6 +3,7 @@ import { PageProps } from '@/types';
 import { formatRupiah } from '@/lib/formator';
 import { Head, Link, router } from '@inertiajs/react';
 import QurbanBrand from '@/Components/QurbanBrand';
+import {Icon } from '@/Components/Icon';
 import ReportFooterArt from '@/Components/ReportFooterArt';
 
 interface PublicReportProps extends Record<string, unknown> {
@@ -45,10 +46,10 @@ interface PublicReportProps extends Record<string, unknown> {
 function animalIcon(linked: string, type: string) {
     const t = `${linked} ${type}`.toLowerCase();
     if (t.includes('cow')) {
-        return <i className="fa-solid fa-cow text-qurban-800" aria-hidden />;
+        return <Icon name="cow" width={20} height={20} className="text-emerald-700" aria-hidden />;
     }
     if (t.includes('sheep')) {
-        return <i className="fa-solid fa-sheep text-amber-700" aria-hidden />;
+        return <Icon name="sheep" width={20} height={20} className="text-amber-700" aria-hidden />;
     }
     return <i className="fa-solid fa-paw text-gray-500" aria-hidden />;
 }
@@ -90,8 +91,8 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                             </button>
                         </div>
                         <div className="hidden flex-1 text-center lg:block lg:px-4">
-                            <h1 className="text-xl font-bold text-qurban-800 sm:text-2xl">Qurban Event Live Report</h1>
-                            <p className="mt-1 text-sm text-gray-500">Public event summary filtered by event year.</p>
+                            <h1 className="text-xl font-bold text-qurban-800 sm:text-2xl">Laporan Pelaksanaan Qurban</h1>
+                            <p className="mt-1 text-sm text-gray-500">Ringkasan pelaksanaan berdasarkan tahun {selectedYear}.</p>
                         </div>
                         <div className="hidden flex-wrap items-center justify-center gap-3 lg:flex lg:justify-end">
                             <div className="relative min-w-[8.5rem]">
@@ -115,9 +116,6 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                         ))
                                     )}
                                 </select>
-                                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400">
-                                    <i className="fa-solid fa-chevron-down text-xs" aria-hidden />
-                                </span>
                             </div>
                             {auth.user ? (
                                 <Link
@@ -139,8 +137,8 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                         </div>
                     </div>
                     <div className="border-t border-gray-100 px-4 py-3 lg:hidden">
-                        <h1 className="text-center text-lg font-bold text-qurban-800">Qurban Event Live Report</h1>
-                        <p className="mt-1 text-center text-xs text-gray-500">Public event summary filtered by event year.</p>
+                        <h1 className="text-center text-lg font-bold text-qurban-800">Laporan Pelaksanaan Qurban</h1>
+                        <p className="mt-1 text-center text-xs text-gray-500">Ringkasan pelaksanaan berdasarkan tahun {selectedYear}.</p>
                     </div>
                     {mobileMenuOpen ? (
                         <div className="flex flex-col gap-3 border-t border-gray-100 px-4 py-4 lg:hidden">
@@ -195,10 +193,10 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                     <i className="fa-solid fa-users" aria-hidden />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Number of participants</p>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Jumlah Peserta</p>
                                     <p className="mt-1 text-3xl font-bold text-qurban-800">{summary.participant_count}</p>
                                     <p className="mt-2 text-xs text-gray-600">
-                                        Cow: {summary.participant_count_cow} | Sheep: {summary.participant_count_sheep}
+                                        Sapi: {summary.participant_count_cow} | Domba: {summary.participant_count_sheep}
                                     </p>
                                 </div>
                             </div>
@@ -209,10 +207,10 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                     <i className="fa-solid fa-cow" aria-hidden />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Number of qurban</p>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Jumlah Hewan Qurban</p>
                                     <p className="mt-1 text-3xl font-bold text-qurban-800">{summary.qurban_count}</p>
                                     <p className="mt-2 text-xs text-gray-600">
-                                        Cow: {summary.qurban_count_cow} | Sheep: {summary.qurban_count_sheep}
+                                        Sapi: {summary.qurban_count_cow} | Domba: {summary.qurban_count_sheep}
                                     </p>
                                 </div>
                             </div>
@@ -223,10 +221,10 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                     <i className="fa-solid fa-wallet" aria-hidden />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Cash summary</p>
-                                    <p className="mt-2 text-sm text-gray-700">Received: {formatRupiah(summary.total_cash_received)}</p>
-                                    <p className="text-sm text-gray-700">Spent: {formatRupiah(summary.total_spent)}</p>
-                                    <p className="mt-2 text-sm font-bold text-qurban-800">Remaining: {formatRupiah(summary.remaining_cash)}</p>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Ringkasan Keuangan</p>
+                                    <p className="mt-2 text-sm text-gray-700">Diterima: {formatRupiah(summary.total_cash_received)}</p>
+                                    <p className="text-sm text-gray-700">Dibelanjakan: {formatRupiah(summary.total_spent)}</p>
+                                    <p className="mt-2 text-sm font-bold text-qurban-800">Saldo sisa: {formatRupiah(summary.remaining_cash)}</p>
                                 </div>
                             </div>
                         </div>
@@ -236,7 +234,7 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                         <div className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                             <h2 className="inline-flex items-center gap-2 text-lg font-semibold text-gray-900">
                                 <i className="fa-solid fa-users text-qurban-800" aria-hidden />
-                                Participants
+                                Peserta
                             </h2>
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <div className="relative min-w-[10rem]">
@@ -256,11 +254,11 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                                 { preserveScroll: true, replace: true },
                                             )
                                         }
-                                        className="w-full cursor-pointer rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-qurban-600 focus:outline-none focus:ring-1 focus:ring-qurban-600"
+                                        className="w-full cursor-pointer rounded-lg border border-gray-200 py-2 pl-9 pr-7 text-sm focus:border-qurban-600 focus:outline-none focus:ring-1 focus:ring-qurban-600"
                                     >
-                                        <option value="">Filter by cow/sheep</option>
-                                        <option value="Cow">Cow</option>
-                                        <option value="Sheep">Sheep</option>
+                                        <option value="">Filter Hewan Qurban</option>
+                                        <option value="Cow">Sapi</option>
+                                        <option value="Sheep">Domba</option>
                                     </select>
                                 </div>
                                 <div className="relative min-w-0 flex-1 sm:min-w-[14rem]">
@@ -294,11 +292,11 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                 <thead className="bg-gray-50/80">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Name</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Address</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Linked qurban</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Paid</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Required</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Nama</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Alamat</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Hewan Qurban</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Dibayarkan</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Tagihan</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                                     </tr>
                                 </thead>
@@ -306,7 +304,7 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                     {participants.length === 0 ? (
                                         <tr>
                                             <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                                                No participant data for this event.
+                                                Belum ada peserta.
                                             </td>
                                         </tr>
                                     ) : (
@@ -336,26 +334,29 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                         <div className="space-y-3 p-4 md:hidden">
                             {participants.length === 0 ? (
                                 <div className="rounded-lg border border-dashed border-gray-200 py-8 text-center text-sm text-gray-500">
-                                    No participant data for this event.
+                                    Belum ada peserta.
                                 </div>
                             ) : (
                                 participants.map((participant, index) => (
                                     <div
                                         key={`${participant.name}-${participant.linked_qurban}-m-${index}`}
-                                        className="flex gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-4"
+                                        className="flex gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3"
                                     >
                                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100">
                                             {animalIcon(participant.linked_qurban, participant.qurban_type)}
                                         </div>
                                         <div className="min-w-0 flex-1 space-y-2">
-                                            <div className="flex items-start justify-between gap-2">
-                                                <p className="font-semibold text-gray-900">{participant.name}</p>
-                                                <i className="fa-solid fa-chevron-right mt-1 text-xs text-gray-300" aria-hidden />
+                                            <div className="">
+                                                <p className="text-xs text-gray-500">{participant.linked_qurban}</p>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p className="font-semibold text-gray-900">{participant.name}</p>
+                                                </div>
                                             </div>
-                                            <p className="text-xs text-gray-500">{participant.linked_qurban}</p>
-                                            <p className="text-sm font-semibold text-qurban-800">{formatRupiah(participant.required_amount)}</p>
-                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                {statusBadge(participant.payment_status)}
+                                            <div className="flex items-start justify-between gap-2">
+                                                <p className="text-sm font-semibold text-qurban-800">{formatRupiah(participant.required_amount)}</p>
+                                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                                    {statusBadge(participant.payment_status)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -368,7 +369,7 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                         <div className="border-b border-gray-100 p-4 sm:p-5">
                             <h2 className="inline-flex items-center gap-2 text-lg font-semibold text-gray-900">
                                 <i className="fa-solid fa-cart-shopping text-qurban-800" aria-hidden />
-                                Procurement details
+                                Detil Pembelanjaan
                             </h2>
                         </div>
                         <div className="hidden overflow-x-auto md:block">
@@ -376,17 +377,17 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                 <thead className="bg-gray-50/80">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Item</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Price</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Quantity</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Harga</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Jumlah</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Total</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Notes</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 bg-white">
                                     {procurements.length === 0 ? (
                                         <tr>
                                             <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                                                No procurement data for this event.
+                                                Belum ada pembelanjaan.
                                             </td>
                                         </tr>
                                     ) : (
@@ -413,7 +414,7 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                         <div className="space-y-3 p-4 md:hidden">
                             {procurements.length === 0 ? (
                                 <div className="rounded-lg border border-dashed border-gray-200 py-8 text-center text-sm text-gray-500">
-                                    No procurement data for this event.
+                                    Belum ada pembelanjaan.
                                 </div>
                             ) : (
                                 procurements.map((procurement) => (
@@ -428,14 +429,14 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                             <div className="min-w-0 flex-1 space-y-2 text-sm text-gray-700">
                                                 <p className="font-semibold text-gray-900">{procurement.item}</p>
                                                 <div className="grid grid-cols-2 gap-2 text-xs">
-                                                    <span className="text-gray-500">Price</span>
+                                                    <span className="text-gray-500">Harga</span>
                                                     <span className="text-right">{formatRupiah(procurement.price)}</span>
-                                                    <span className="text-gray-500">Quantity</span>
+                                                    <span className="text-gray-500">Jumlah</span>
                                                     <span className="text-right">{procurement.quantity}</span>
                                                     <span className="text-gray-500">Total</span>
                                                     <span className="text-right font-semibold text-qurban-800">{formatRupiah(procurement.total)}</span>
                                                 </div>
-                                                <p className="text-xs text-gray-500">Notes: {procurement.notes ?? '—'}</p>
+                                                <p className="text-xs text-gray-500">Catatan: {procurement.notes ?? '—'}</p>
                                             </div>
                                         </div>
                                     </div>

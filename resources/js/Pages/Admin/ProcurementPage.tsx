@@ -172,7 +172,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
     return (
         <AuthenticatedLayout
             user={auth.user!}
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Procurements</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Pembelanjaan</h2>}
         >
             <Head title="Procurements" />
 
@@ -180,9 +180,9 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="overflow-hidden rounded-lg bg-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4">
-                            <p className="text-sm text-gray-600">Manage procurement items and their payments.</p>
+                            <p className="text-sm text-gray-600">Pencatatan Pembelanjaan.</p>
                             <PrimaryButton type="button" onClick={openCreateModal}>
-                                Add Procurement
+                                Tambah Pembelanjaan
                             </PrimaryButton>
                         </div>
 
@@ -191,11 +191,11 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Item</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Price</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Quantity</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Total Price</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Harga</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Jumlah</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Total</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Notes</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Catatan</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
                                     </tr>
                                 </thead>
@@ -203,7 +203,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                     {procurements.length === 0 ? (
                                         <tr>
                                             <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
-                                                No records yet.
+                                                Belum ada catatan pembelanjaan.
                                             </td>
                                         </tr>
                                     ) : (
@@ -215,7 +215,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                                 <td className="px-4 py-3 text-sm text-gray-700">{formatRupiah(procurement.total_amount)}</td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">
                                                     {procurement.outstanding_amount > 0
-                                                        ? `Outstanding ${formatRupiah(procurement.outstanding_amount)}`
+                                                        ? `Sisa ${formatRupiah(procurement.outstanding_amount)}`
                                                         : 'Paid'}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-gray-700">{procurement.notes ?? '-'}</td>
@@ -226,7 +226,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                                             onClick={() => openPaymentModal(procurement)}
                                                             className="font-medium text-blue-600 hover:text-blue-800"
                                                         >
-                                                            Payments
+                                                            Pembayaran
                                                         </button>
                                                         <button
                                                             type="button"
@@ -254,21 +254,21 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                         <div className="space-y-3 p-4 md:hidden">
                             {procurements.length === 0 ? (
                                 <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
-                                    No records yet.
+                                    Belum ada catatan pembelanjaan.
                                 </div>
                             ) : (
                                 procurements.map((procurement) => (
                                     <div key={procurement.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Item</span><span className="text-right">{procurement.item}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Price</span><span className="text-right">{formatRupiah(procurement.price)}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Quantity</span><span className="text-right">{procurement.quantity}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Total Price</span><span className="text-right">{formatRupiah(procurement.total_amount)}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Status</span><span className="text-right">{procurement.outstanding_amount > 0 ? `Outstanding ${formatRupiah(procurement.outstanding_amount)}` : 'Paid'}</span></div>
-                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Notes</span><span className="text-right">{procurement.notes ?? '-'}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Harga</span><span className="text-right">{formatRupiah(procurement.price)}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Jumlah</span><span className="text-right">{procurement.quantity}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Total</span><span className="text-right">{formatRupiah(procurement.total_amount)}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Status</span><span className="text-right">{procurement.outstanding_amount > 0 ? `Sisa ${formatRupiah(procurement.outstanding_amount)}` : 'Lunas'}</span></div>
+                                            <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Catatan</span><span className="text-right">{procurement.notes ?? '-'}</span></div>
                                         </div>
                                         <div className="mt-4 flex flex-wrap gap-3 border-t border-gray-100 pt-3 text-sm">
-                                            <button type="button" onClick={() => openPaymentModal(procurement)} className="font-medium text-blue-600 hover:text-blue-800">Payments</button>
+                                            <button type="button" onClick={() => openPaymentModal(procurement)} className="font-medium text-blue-600 hover:text-blue-800">Pembayaran</button>
                                             <button type="button" onClick={() => startEditing(procurement)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
                                             <button type="button" onClick={() => destroyProcurement(procurement.id)} className="font-medium text-red-600 hover:text-red-800">Delete</button>
                                         </div>
@@ -283,7 +283,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
             <Modal show={showingFormModal} onClose={closeFormModal} maxWidth="2xl">
                 <div className="p-6">
                     <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Procurement' : 'Create Procurement'}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Pembelanjaan' : 'Buat Pembelanjaan'}</h3>
                         <button
                             type="button"
                             onClick={closeFormModal}
@@ -300,17 +300,17 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                             <InputError message={procurementForm.errors.item} className="mt-2" />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Price</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Harga</label>
                             <TextInput type="number" step="0.01" value={procurementForm.data.price} onChange={(e) => procurementForm.setData('price', e.target.value)} className="block w-full" />
                             <InputError message={procurementForm.errors.price} className="mt-2" />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Quantity</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Jumlah</label>
                             <TextInput type="number" value={procurementForm.data.quantity} onChange={(e) => procurementForm.setData('quantity', e.target.value)} className="block w-full" />
                             <InputError message={procurementForm.errors.quantity} className="mt-2" />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Catatan</label>
                             <textarea
                                 value={procurementForm.data.notes}
                                 onChange={(e) => procurementForm.setData('notes', e.target.value)}
@@ -327,13 +327,13 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                             checked={procurementForm.data.is_paid}
                                             onChange={(e) => procurementForm.setData('is_paid', e.target.checked)}
                                         />
-                                        <span className="text-sm font-medium text-gray-700">Paid</span>
+                                        <span className="text-sm font-medium text-gray-700">Lunas?</span>
                                     </label>
                                 </div>
                             )}
                             {!editingId && procurementForm.data.is_paid && (
                                 <div className="mb-4 max-w-sm">
-                                    <label className="mb-1 block text-sm font-medium text-gray-700">Date of Payment</label>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Tanggal Pembayaran</label>
                                     <TextInput
                                         type="date"
                                         value={procurementForm.data.date_of_payment}
@@ -346,7 +346,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                         </div>
                         <div className="md:col-span-2">
                             <PrimaryButton disabled={procurementForm.processing}>
-                                {editingId ? 'Update Procurement' : 'Create Procurement'}
+                                {editingId ? 'Update Pembelanjaan' : 'Buat Pembelanjaan'}
                             </PrimaryButton>
                         </div>
                     </form>
@@ -370,18 +370,18 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
 
                     <form onSubmit={submitPayment} className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Amount</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Jumlah</label>
                             <TextInput type="number" step="0.01" value={paymentForm.data.amount} onChange={(e) => paymentForm.setData('amount', e.target.value)} className="block w-full" />
                             <InputError message={paymentForm.errors.amount} className="mt-2" />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Date of Payment</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">Tanggal Pembayaran</label>
                             <TextInput type="date" value={paymentForm.data.date_of_payment} onChange={(e) => paymentForm.setData('date_of_payment', e.target.value)} className="block w-full" />
                             <InputError message={paymentForm.errors.date_of_payment} className="mt-2" />
                         </div>
                         <div className="md:col-span-2">
                             <PrimaryButton disabled={paymentForm.processing}>
-                                {editingPaymentId ? 'Update Payment' : 'Add Payment'}
+                                {editingPaymentId ? 'Update Pembayaran' : 'Add Pembayaran'}
                             </PrimaryButton>
                         </div>
                     </form>
@@ -424,7 +424,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                                 ) : (
                                     <tr>
                                         <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
-                                            No payments for this procurement.
+                                            Belum ada pembayaran untuk pembelanjaan ini.
                                         </td>
                                     </tr>
                                 )}
@@ -437,8 +437,8 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                             paymentProcurement.payments.map((payment) => (
                                 <div key={payment.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
                                     <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Amount</span><span>{formatRupiah(payment.amount)}</span></div>
-                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Date</span><span>{payment.date_of_payment}</span></div>
+                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Jumlah</span><span>{formatRupiah(payment.amount)}</span></div>
+                                        <div className="flex justify-between"><span className="font-medium text-gray-500">Tanggal</span><span>{payment.date_of_payment}</span></div>
                                     </div>
                                     <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">
                                         <button type="button" onClick={() => startEditingPayment(payment)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
@@ -448,7 +448,7 @@ export default function ProcurementPage({ auth, procurements }: PageProps<Procur
                             ))
                         ) : (
                             <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
-                                No payments for this procurement.
+                                Belum ada pembayaran untuk pembelanjaan ini.
                             </div>
                         )}
                     </div>

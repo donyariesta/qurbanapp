@@ -18,4 +18,17 @@ class Formatter
     {
         return \Carbon\Carbon::parse($date)->format('d M Y');
     }
+
+    public static function qurbanName($qurbanNumber, $qurbanType): string
+    {
+        if (empty($qurbanNumber) || empty($qurbanType)) {
+            return '-';
+        }
+
+        $qurbanTypes = [
+            'cow' => 'Sapi',
+            'sheep' => 'Kambing',
+        ];
+        return $qurbanTypes[strtolower($qurbanType)] . " #$qurbanNumber";
+    }
 }

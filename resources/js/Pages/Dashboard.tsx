@@ -27,12 +27,11 @@ export default function Dashboard({ auth, latestEventYear, stats, framework }: P
     const can = (name: string) => canAccessRoute(permissions, name);
 
     const statDefs: StatDef[] = [
-        { label: 'Events', sub: 'Total events', value: stats.events, routeName: 'events.index', faicon: 'fa-calendar' },
-        { label: 'Submitters', sub: 'Registered submitters', value: stats.submitters, routeName: 'submitters.index', faicon: 'fa-user-group' },
-        { label: 'Participants', sub: 'All participants', value: stats.participants, routeName: 'participants.index', faicon: 'fa-users' },
-        { label: 'Qurbans', sub: 'Qurban records', value: stats.qurbans, routeName: 'qurbans.index', icon: 'cow' },
-        { label: 'Procurements', sub: 'Procurement rows', value: stats.procurements, routeName: 'procurements.index', faicon: 'fa-cart-shopping' },
-        { label: 'Transactions', sub: 'Payment movements', value: stats.transactions, routeName: 'transactions.index', faicon: 'fa-right-left' },
+        { label: 'Peserta', sub: 'Seluruh peserta', value: stats.participants, routeName: 'participants.index', faicon: 'fa-users' },
+        { label: 'Hewan Sapi', sub: 'Hewan qurban sapi', value: stats.qurbans_cow, routeName: 'qurbans.index', icon: 'cow' },
+        { label: 'Hewan Domba', sub: 'Hewan qurban domba', value: stats.qurbans_sheep, routeName: 'qurbans.index', icon: 'sheep' },
+        { label: 'Pembelanjaan', sub: 'Pembelanjaan', value: stats.procurements, routeName: 'procurements.index', faicon: 'fa-cart-shopping' },
+        { label: 'Transaksi', sub: 'Uang masuk/keluar', value: stats.transactions, routeName: 'transactions.index', faicon: 'fa-right-left' },
     ];
 
     return (
@@ -43,7 +42,7 @@ export default function Dashboard({ auth, latestEventYear, stats, framework }: P
                 <div className="mx-auto max-w-7xl space-y-8">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-                        <p className="mt-1 text-sm text-gray-500">Overview of your qurban management system.</p>
+                        <p className="mt-1 text-sm text-gray-500">Sekilas tentang Pelaksanaan Qurban.</p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

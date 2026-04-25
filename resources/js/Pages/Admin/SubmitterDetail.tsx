@@ -4,6 +4,7 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { AnimalBagdeIcon } from '@/Components/Icon';
 import { PageProps } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
@@ -16,6 +17,7 @@ type ParticipantRecord = {
     address: string;
     qurban_id: number | null;
     qurban_label: string;
+    qurban_type: string;
 };
 
 type Option = {
@@ -164,7 +166,8 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
 
     const totalOwed = Number(paymentSummary.total_owed || 0);
     const totalPaid = Number(paymentSummary.total_paid || 0);
-    const outstanding = totalOwed - totalPaid;
+    const isSurplus = (totalOwed - totalPaid) < 0;
+    const outstanding = Math.abs(totalOwed - totalPaid);
 
     return (
         <AuthenticatedLayout
@@ -183,7 +186,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                 <p className="text-sm text-gray-600">Phone: {submitter.phone_number}</p>
                             </div>
                             <Link href={route('submitters.index')} className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700">
-                                Back to Submitters
+                                Kembali
                             </Link>
                         </div>
                     </div>
@@ -270,14 +273,18 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                     ) : (
                                         participants.map((participant) => (
                                             <div key={participant.id} className="rounded-lg border border-gray-200 p-4 shadow-sm">
-                                                <div className="space-y-2 text-sm">
-                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Nama</span><span className="text-right">{participant.full_name}</span></div>
-                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Alamat</span><span className="text-right">{participant.address}</span></div>
-                                                    <div className="flex justify-between gap-3"><span className="font-medium text-gray-500">Hewan Qurban</span><span className="text-right">{participant.qurban_label}</span></div>
+                                                <div className="space-y-2 text-sm flex">
+                                                    <AnimalBagdeIcon type={participant.qurban_type} />
+                                                    <div>
+                                                        <div className="flex justify-between gap-3">
+                                                            <span className="text-right">{participant.qurban_label}</span>
+                                                        </div>
+                                                        <div className="flex gap-3"><span className="text-right font-semibold text-gray-900">{participant.full_name}</span> - <span className="text-right">{participant.address}</span></div>
+                                                    </div>
                                                 </div>
-                                                <div className="mt-3 flex gap-3 border-t border-gray-100 pt-3 text-sm">
-                                                    <button type="button" onClick={() => startEditing(participant)} className="font-medium text-indigo-600 hover:text-indigo-800">Edit</button>
-                                                    <button type="button" onClick={() => destroy(participant.id)} className="font-medium text-red-600 hover:text-red-800">Delete</button>
+                                                <div className="flex gap-3 pl-10 pt-3 text-sm">
+                                                    <button type="button" onClick={() => startEditing(participant)} className="font-medium text-indigo-600 hover:text-indigo-800 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700"><i className="fa-solid fa-pencil text-gray-500" aria-hidden /></button>
+                                                    <button type="button" onClick={() => destroy(participant.id)} className="font-medium text-red-600 hover:text-red-800 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700"><i className="fa-solid fa-trash text-gray-500" aria-hidden /></button>
                                                 </div>
                                             </div>
                                         ))
@@ -296,7 +303,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                         <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(totalPaid)}</p>
                                     </div>
                                     <div className="rounded-md bg-gray-50 p-4">
-                                        <p className="text-sm text-gray-500">Sisa</p>
+                                        {isSurplus ? <p className="text-sm text-gray-500">Lebih Bayar</p> : <p className="text-sm text-gray-500">Sisa</p>}
                                         <p className="mt-1 text-xl font-semibold text-gray-900">{formatRupiah(outstanding)}</p>
                                     </div>
                                 </div>

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Support\Formatter;
 
 class SubmitterController extends Controller
 {
@@ -32,8 +33,8 @@ class SubmitterController extends Controller
                 ['name' => 'name', 'label' => 'Nama', 'type' => 'text', 'required' => true],
                 ['name' => 'address', 'label' => 'Alamat', 'type' => 'textarea', 'required' => true],
                 ['name' => 'phone_number', 'label' => 'Telepon', 'type' => 'text', 'required' => true],
-                ['name' => 'qurban_id', 'label' => 'Hewan Qurban (jika berqurban untuk sendiri)', 'type' => 'select', 'required' => false, 'optionsKey' => 'qurbans'],
-                ['name' => 'add_as_participant', 'label' => 'Berqurban untuk sendiri?', 'type' => 'checkbox', 'defaultValue' => 1],
+                ['name' => 'qurban_id', 'label' => 'Hewan Qurban (jika berqurban untuk sendiri)', 'type' => 'select', 'required' => false, 'optionsKey' => 'qurbans', 'createOnly' => true],
+                ['name' => 'add_as_participant', 'label' => 'Berqurban untuk sendiri?', 'type' => 'checkbox', 'defaultValue' => 1, 'createOnly' => true],
             ],
             'columns' => [
                 ['key' => 'name', 'label' => 'Nama'],
@@ -92,9 +93,8 @@ class SubmitterController extends Controller
                     'full_name' => $participant->full_name,
                     'address' => $participant->address,
                     'qurban_id' => $participant->qurban_id,
-                    'qurban_label' => $participant->qurban
-                        ? "Qurban #{$participant->qurban->qurban_number} - {$participant->qurban->qurban_type}"
-                        : '-',
+                    'qurban_label' => Formatter::qurbanName($participant->qurban->qurban_number, $participant->qurban?->qurban_type),
+                    'qurban_type' => $participant->qurban?->qurban_type,
                 ])
                 ->all(),
             'paymentSummary' => [
