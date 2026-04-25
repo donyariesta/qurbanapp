@@ -8,13 +8,25 @@ use App\Models\Procurement;
 use App\Models\Qurban;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Support\Formatter;
 
 class PublicReportController extends Controller
 {
-    public function index(Request $request): Response
+    private const PARTICIPANT_CSV_COLUMNS = [
+        'Nama',
+        'Alamat',
+        'Jenis Qurban',
+        'Nomor Qurban',
+        'Hewan Qurban',
+        'Dibayarkan',
+        'Tagihan',
+        'Status',
+    ];
+
+    public function index(Request $request): Response|StreamedResponse
     {
         $years = Event::query()
             ->orderByDesc('year')
@@ -23,7 +35,8 @@ class PublicReportController extends Controller
 
         $selectedYear = $request->integer('year') ?: ($years[0] ?? null);
         $participantTypeFilter = $request->string('participant_type')->toString();
-        $participantQurbanNumberFilter = $request->string('participant_qurban_number')->toString();
+        $participantQurbanFilter = $request->string('participant_qurban_id')->toString();
+        $exportParticipantsCsv = $request->boolean('download_participants_csv');
         $event = $selectedYear
             ? Event::query()->where('year', $selectedYear)->first()
             : null;
@@ -41,6 +54,8 @@ class PublicReportController extends Controller
             'total_spent' => 0,
             'remaining_cash' => 0,
         ];
+        $qurbanNumberOptions = [];
+        $meatYieldSummary = null;
 
         if ($event) {
             $submitterPayments = Transaction::query()
@@ -65,17 +80,21 @@ class PublicReportController extends Controller
 
             $participants = Participant::query()
                 ->with(['qurban', 'submitter'])
-                ->where('event_id', $event->event_id)
+                ->where('participants.event_id', $event->event_id)
                 ->when(
                     in_array($participantTypeFilter, ['Cow', 'Sheep'], true),
                     fn ($query) => $query->whereHas('qurban', fn ($q) => $q->where('qurban_type', $participantTypeFilter))
                 )
                 ->when(
-                    $participantQurbanNumberFilter !== '',
-                    fn ($query) => $query->whereHas('qurban', fn ($q) => $q->where('qurban_number', (int) $participantQurbanNumberFilter))
+                    $participantQurbanFilter !== '',
+                    fn ($query) => $query->where('participants.qurban_id', (int) $participantQurbanFilter)
                 )
-                ->orderBy('first_name')
-                ->orderBy('last_name')
+                ->join('qurbans', 'participants.qurban_id', '=', 'qurbans.qurban_id')
+                ->orderByRaw("CASE WHEN qurbans.qurban_type = 'Cow' THEN 0 ELSE 1 END")
+                ->orderBy('qurbans.qurban_number')
+                ->orderBy('participants.first_name')
+                ->orderBy('participants.last_name')
+                ->select('participants.*')
                 ->get()
                 ->map(function (Participant $participant) use ($submitterPayments, $submitterRequired, $submitterParticipantCount) {
                     $requiredAmount = (float) ($participant->qurban?->qurban_shared_price ?? 0);
@@ -98,6 +117,18 @@ class PublicReportController extends Controller
                             : 'Pending',
                     ];
                 });
+
+            $qurbanNumberOptions = Qurban::query()
+                ->where('event_id', $event->event_id)
+                ->orderByRaw("CASE WHEN qurban_type = 'Cow' THEN 0 ELSE 1 END")
+                ->orderBy('qurban_number')
+                ->get()
+                ->map(fn (Qurban $qurban) => [
+                    'value' => (string) $qurban->qurban_id,
+                    'label' => Formatter::qurbanName($qurban->qurban_number, $qurban->qurban_type),
+                ])
+                ->values()
+                ->all();
 
             $procurements = Procurement::query()
                 ->where('event_id', $event->event_id)
@@ -161,6 +192,14 @@ class PublicReportController extends Controller
                     ''
                 ),
             ];
+
+            if ($event->display_meat_yield_summary_public_report) {
+                $meatYieldSummary = $this->buildMeatYieldSummary((int) $event->event_id, (int) $event->total_pax_distribution);
+            }
+
+            if ($exportParticipantsCsv) {
+                return $this->downloadParticipantsCsv($participants, $event->year);
+            }
         }
 
         return Inertia::render('PublicReport', [
@@ -168,11 +207,81 @@ class PublicReportController extends Controller
             'selectedYear' => $selectedYear,
             'participantFilters' => [
                 'participant_type' => in_array($participantTypeFilter, ['Cow', 'Sheep'], true) ? $participantTypeFilter : '',
-                'participant_qurban_number' => $participantQurbanNumberFilter,
+                'participant_qurban_id' => $participantQurbanFilter,
             ],
+            'participantQurbanOptions' => $qurbanNumberOptions,
             'summary' => $summary,
             'participants' => $participants->values()->all(),
             'procurements' => $procurements->values()->all(),
+            'showMeatYieldSummary' => (bool) ($event?->display_meat_yield_summary_public_report ?? false),
+            'meatYieldSummary' => $meatYieldSummary,
         ]);
+    }
+
+    private function downloadParticipantsCsv($participants, int $year): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($participants) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, self::PARTICIPANT_CSV_COLUMNS);
+
+            foreach ($participants as $participant) {
+                fputcsv($handle, [
+                    $participant['name'],
+                    $participant['address'],
+                    $participant['qurban_type'],
+                    $participant['qurban_number'],
+                    $participant['linked_qurban'],
+                    $participant['paid_amount'],
+                    $participant['required_amount'],
+                    $participant['payment_status'],
+                ]);
+            }
+
+            fclose($handle);
+        }, "participants-{$year}.csv", [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    private function buildMeatYieldSummary(int $eventId, int $totalPaxDistribution): array
+    {
+        $totalPax = max(1, $totalPaxDistribution);
+
+        $qurbans = Qurban::query()
+            ->where('event_id', $eventId)
+            ->with('meatYields')
+            ->orderByRaw("CASE WHEN qurban_type = 'Cow' THEN 0 ELSE 1 END")
+            ->orderBy('qurban_number')
+            ->get();
+
+        $rows = $qurbans->map(function (Qurban $qurban) {
+            $bone = (float) $qurban->meatYields->where('status', 'bone')->sum('weigh');
+            $meat = (float) $qurban->meatYields->where('status', 'meat')->sum('weigh');
+            $meat = $meat < $bone ? $bone : $meat;
+
+            return [
+                'qurban_type' => $qurban->qurban_type,
+                'meat' => $meat,
+            ];
+        });
+
+        $cowTotal = (float) $rows->where('qurban_type', 'Cow')->sum('meat');
+        $sheepTotal = (float) $rows->where('qurban_type', 'Sheep')->sum('meat');
+        $cowTwoThird = ($cowTotal * 2) / 3;
+        $sheepTwoThird = ($sheepTotal * 2) / 3;
+
+        return [
+            'cows' => [
+                'effective_total' => round($cowTotal, 2),
+                'two_third_total' => round($cowTwoThird, 2),
+                'two_third_portion_per_pax' => round($cowTwoThird / $totalPax, 2),
+            ],
+            'sheeps' => [
+                'effective_total' => round($sheepTotal, 2),
+                'two_third_total' => round($sheepTwoThird, 2),
+                'two_third_portion_per_pax' => round($sheepTwoThird / $totalPax, 2),
+            ],
+            'total_pax_distribution' => $totalPax,
+        ];
     }
 }

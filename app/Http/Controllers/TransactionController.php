@@ -22,46 +22,67 @@ class TransactionController extends Controller
     public function index(): Response
     {
         $eventId = $this->selectedEventId();
+        $request = request();
+        $validated = $request->validate([
+            'submitter_id' => ['nullable', 'integer'],
+            'procurement_id' => ['nullable', 'integer'],
+            'payment_from' => ['nullable', 'date'],
+            'payment_to' => ['nullable', 'date'],
+            'cash_flow' => ['nullable', Rule::in(['all', 'cash_in', 'cash_out'])],
+            'per_page' => ['nullable', 'integer', 'in:50,100,500,1000,2000'],
+        ]);
+        $perPage = (int) ($validated['per_page'] ?? 50);
+        $cashFlow = $validated['cash_flow'] ?? 'all';
+        $submitterOptions = $this->submitterOptions();
+        $procurementOptions = $this->procurementOptions();
 
-        return Inertia::render('Admin/CrudPage', [
-            'title' => 'Transactions',
-            'singular' => 'Transaction',
-            'routeName' => 'transactions',
-            'fields' => [
-                ['name' => 'amount', 'label' => 'Amount', 'type' => 'number', 'required' => true, 'step' => '0.01'],
-                ['name' => 'date_of_payment', 'label' => 'Date of Payment', 'type' => 'date', 'required' => true],
-                ['name' => 'reference_type', 'label' => 'Reference Type', 'type' => 'select', 'required' => false, 'options' => [
-                    ['value' => '', 'label' => 'None'],
-                    ['value' => 'Submitter', 'label' => 'Submitter'],
-                    ['value' => 'Participant', 'label' => 'Participant'],
-                    ['value' => 'Transaction', 'label' => 'Transaction'],
-                    ['value' => 'Procurement', 'label' => 'Procurement'],
-                ]],
-                ['name' => 'reference_id', 'label' => 'Reference Record ID', 'type' => 'number', 'required' => false],
+        $records = Transaction::query()
+            ->with('event')
+            ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
+            ->when($validated['submitter_id'] ?? null, fn ($query, $value) => $query
+                ->where('reference_type', 'Submitter')
+                ->where('reference_id', (int) $value))
+            ->when($validated['procurement_id'] ?? null, fn ($query, $value) => $query
+                ->where('reference_type', 'Procurement')
+                ->where('reference_id', (int) $value))
+            ->when($validated['payment_from'] ?? null, fn ($query, $value) => $query->whereDate('date_of_payment', '>=', $value))
+            ->when($validated['payment_to'] ?? null, fn ($query, $value) => $query->whereDate('date_of_payment', '<=', $value))
+            ->when($cashFlow === 'cash_in', fn ($query) => $query->where('amount', '>', 0))
+            ->when($cashFlow === 'cash_out', fn ($query) => $query->where('amount', '<', 0))
+            ->orderByDesc('date_of_payment')
+            ->limit($perPage)
+            ->get();
+
+        $submitterMap = Submitter::query()
+            ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
+            ->pluck('name', 'submitter_id');
+        $procurementMap = Procurement::query()
+            ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
+            ->pluck('item', 'procurement_id');
+
+        return Inertia::render('Admin/TransactionPage', [
+            'filters' => [
+                'submitter_id' => isset($validated['submitter_id']) ? (string) $validated['submitter_id'] : '',
+                'procurement_id' => isset($validated['procurement_id']) ? (string) $validated['procurement_id'] : '',
+                'payment_from' => $validated['payment_from'] ?? '',
+                'payment_to' => $validated['payment_to'] ?? '',
+                'cash_flow' => $cashFlow,
+                'per_page' => (string) $perPage,
             ],
-            'columns' => [
-                ['key' => 'amount', 'label' => 'Amount'],
-                ['key' => 'date_of_payment', 'label' => 'Payment Date'],
-                ['key' => 'reference_label', 'label' => 'Reference'],
-            ],
-            'records' => Transaction::query()
-                ->with('event')
-                ->orderByDesc('date_of_payment')
-                ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
-                ->get()
+            'submitterOptions' => $submitterOptions,
+            'procurementOptions' => $procurementOptions,
+            'records' => $records
                 ->map(fn (Transaction $transaction) => [
                     'id' => $transaction->transaction_id,
-                    'event_id' => $transaction->event_id,
                     'amount' => $transaction->amount,
                     'date_of_payment' => optional($transaction->date_of_payment)->format('Y-m-d'),
                     'reference_id' => $transaction->reference_id,
                     'reference_type' => $transaction->reference_type,
                     'reference_label' => $transaction->reference_type && $transaction->reference_id
-                        ? "{$transaction->reference_type} #{$transaction->reference_id}"
-                        : 'None',
+                        ? $this->buildReferenceLabel($transaction, $submitterMap, $procurementMap)
+                        : (!empty($transaction->notes) ? $transaction->notes : 'None'),
                 ])
                 ->all(),
-            'options' => [],
         ]);
     }
 
@@ -197,14 +218,35 @@ class TransactionController extends Controller
         $eventId = $this->selectedEventId();
 
         $validated = $request->validate([
+            'transaction_option' => ['nullable', Rule::in(['general', 'submitter_payment', 'procurement_payment'])],
             'amount' => ['required', 'numeric', 'min:0'],
             'date_of_payment' => ['required', 'date'],
             'reference_type' => ['nullable', Rule::in(['Submitter', 'Participant', 'Transaction', 'Procurement'])],
             'reference_id' => ['nullable', 'integer'],
+            'submitter_id' => ['nullable', 'integer'],
+            'procurement_id' => ['nullable', 'integer'],
+            'notes' => ['nullable', 'string'],
+            'type' => ['nullable', Rule::in(['in', 'out'])],
         ]);
+        $mode = $validated['transaction_option'] ?? 'general';
 
-        $validated['reference_type'] = $validated['reference_type'] ?: null;
-        $validated['reference_id'] = $validated['reference_id'] ?: null;
+        if ($mode === 'submitter_payment') {
+            $validated['reference_type'] = 'Submitter';
+            $validated['reference_id'] = $validated['submitter_id'] ?? null;
+        }
+
+        if ($mode === 'procurement_payment') {
+            $validated['reference_type'] = 'Procurement';
+            $validated['reference_id'] = $validated['procurement_id'] ?? null;
+            $validated['amount'] = ((float) $validated['amount']) * -1;
+        }
+
+        if ($mode === 'general') {
+            $validated['amount'] = $validated['type'] == 'out' ? $validated['amount'] * -1 : $validated['amount'];
+            unset($validated['type']);
+        }
+        $validated['reference_type'] = !empty($validated['reference_type']) ? $validated['reference_type'] : null;
+        $validated['reference_id'] = !empty($validated['reference_id']) ? $validated['reference_id'] : null;
 
         if (($validated['reference_type'] && ! $validated['reference_id']) || (! $validated['reference_type'] && $validated['reference_id'])) {
             throw ValidationException::withMessages([
@@ -220,7 +262,24 @@ class TransactionController extends Controller
             ]);
         }
 
+        unset($validated['transaction_option'], $validated['submitter_id'], $validated['procurement_id']);
+
         return $validated;
+    }
+
+    private function buildReferenceLabel(Transaction $transaction, $submitterMap, $procurementMap): string
+    {
+        if ($transaction->reference_type === 'Submitter') {
+            $name = $submitterMap[$transaction->reference_id] ?? null;
+            return $name ? "Peserta: {$name}" : "Peserta #{$transaction->reference_id}";
+        }
+
+        if ($transaction->reference_type === 'Procurement') {
+            $item = $procurementMap[$transaction->reference_id] ?? null;
+            return $item ? "Pembelian: {$item}" : "Pembelian #{$transaction->reference_id}";
+        }
+
+        return "{$transaction->reference_type} #{$transaction->reference_id}";
     }
 
     protected function resolveReference(?string $type, ?int $id)

@@ -11,6 +11,7 @@ use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Support\Formatter;
@@ -155,6 +156,12 @@ class SubmitterController extends Controller
             $qurban = Qurban::query()
                 ->where('event_id', $eventId)
                 ->findOrFail($validated['qurban_id']);
+
+            if ($qurban->participants()->count() >= (int) $qurban->quota) {
+                throw ValidationException::withMessages([
+                    'qurban_id' => 'The selected qurban quota is already full.',
+                ]);
+            }
 
             Participant::query()->create([
                 'event_id' => $eventId,

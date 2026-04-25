@@ -47,7 +47,7 @@ class ParticipantController extends Controller
             abort(403, 'This participant does not belong to the selected event.');
         }
 
-        $validated = $this->validateData($request);
+        $validated = $this->validateData($request, $participant);
         $validated['event_id'] = $eventId;
 
         $participant->update($validated);
@@ -76,7 +76,7 @@ class ParticipantController extends Controller
 
         $this->assertSubmitterBelongsToEvent($submitter, $eventId);
 
-        $validated = $this->validateData($request, $submitter);
+        $validated = $this->validateData($request, null, $submitter);
         $validated['event_id'] = $eventId;
         $validated['submitter_id'] = $submitter->submitter_id;
 
@@ -95,7 +95,7 @@ class ParticipantController extends Controller
         $this->assertSubmitterBelongsToEvent($submitter, $eventId);
         $this->assertParticipantBelongsToSubmitter($participant, $submitter, $eventId);
 
-        $validated = $this->validateData($request, $submitter);
+        $validated = $this->validateData($request, $participant, $submitter);
         $validated['event_id'] = $eventId;
         $validated['submitter_id'] = $submitter->submitter_id;
 
@@ -119,7 +119,7 @@ class ParticipantController extends Controller
         return to_route('submitters.show', $submitter);
     }
 
-    private function validateData(Request $request, ?Submitter $submitter = null): array
+    private function validateData(Request $request, ?Participant $participant = null, ?Submitter $submitter = null): array
     {
         $eventId = $this->selectedEventId();
 
@@ -142,6 +142,17 @@ class ParticipantController extends Controller
         if (! $eventId || $qurban->event_id !== (int) $eventId) {
             throw ValidationException::withMessages([
                 'qurban_id' => 'The selected qurban does not belong to the selected event.',
+            ]);
+        }
+
+        $participantCount = Participant::query()
+            ->where('qurban_id', $qurban->qurban_id)
+            ->when($participant, fn ($query) => $query->where('participant_id', '!=', $participant->participant_id))
+            ->count();
+
+        if ($participantCount >= (int) $qurban->quota) {
+            throw ValidationException::withMessages([
+                'qurban_id' => 'The selected qurban quota is already full.',
             ]);
         }
 

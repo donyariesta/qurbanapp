@@ -25,6 +25,7 @@ class MeatYieldController extends Controller
                 'config' => [
                     'accumulate_cows_yield_meat' => false,
                     'total_pax_distribution' => 1,
+                    'display_meat_yield_summary_public_report' => false,
                 ],
             ]);
         }
@@ -56,6 +57,7 @@ class MeatYieldController extends Controller
             'config' => [
                 'accumulate_cows_yield_meat' => $accumulateCows,
                 'total_pax_distribution' => $totalPax,
+                'display_meat_yield_summary_public_report' => (bool) $event->display_meat_yield_summary_public_report,
             ],
         ]);
     }
@@ -63,11 +65,10 @@ class MeatYieldController extends Controller
     private function getQurbansMeatYieldsSummary(int $eventID, $rows, $totalPax, $accumulateCows)
     {
         $cowRows = $rows->where('qurban_type', 'Cow');
-        $cowsEffectiveTotal = (float) $cowRows->sum('effective_weight');
+        $cowsEffectiveTotal = (float) $cowRows->sum('meat');
 
         $sheepRows = $rows->where('qurban_type', 'Sheep');
-        $sheepsEffectiveTotal = (float) $sheepRows->sum('effective_weight');
-        // $sheepsOneThirdTotal = $sheepsEffectiveTotal / 3;
+        $sheepsEffectiveTotal = (float) $sheepRows->sum('meat');
         $sheepsTwoThirdTotal = ($sheepsEffectiveTotal * 2) / 3;
 
         $cowsOneThirdTotal = $cowsEffectiveTotal / 3;
@@ -82,8 +83,8 @@ class MeatYieldController extends Controller
             'total_pax' => $totalPax,
             'accumulate_one_third_cows' => $accumulateCows,
             'cows' => [
-                'gross_total' => round((float) $cowRows->sum('gross'), 2),
-                'net_total' => round((float) $cowRows->sum('net'), 2),
+                'meat_total' => round((float) $cowRows->sum('meat'), 2),
+                'bone_total' => round((float) $cowRows->sum('bone'), 2),
                 'two_third_total' => round($cowsTwoThirdTotal, 2),
                 'two_third_portion_per_pax' => round($cowsTwoThirdTotal / $totalPax, 2),
                 'one_third_total' => round($cowsOneThirdTotal, 2),
@@ -93,14 +94,14 @@ class MeatYieldController extends Controller
                     : $cowsOneThirdTotal,
             ],
             'sheeps' => [
-                'gross_total' => round((float) $sheepRows->sum('gross'), 2),
-                'net_total' => round((float) $sheepRows->sum('net'), 2),
+                'meat_total' => round((float) $sheepRows->sum('meat'), 2),
+                'bone_total' => round((float) $sheepRows->sum('bone'), 2),
                 'two_third_total' => round($sheepsTwoThirdTotal, 2),
                 'two_third_portion_per_pax' => round($sheepsTwoThirdTotal / $totalPax, 2),
                 'distribution_rows' => $sheepRows
                     ->map(fn (array $row) => [
                         'qurban_number' => $row['qurban_number'],
-                        'one_third' => round(($row['effective_weight'] / 3), 2),
+                        'one_third' => round(($row['meat'] / 3), 2),
                     ])
                     ->values()
                     ->all(),
@@ -120,11 +121,10 @@ class MeatYieldController extends Controller
             ->get();
 
         return $qurbans->map(function (Qurban $qurban) {
-            $net = (float) $qurban->meatYields->where('status', 'net')->sum('weigh');
-            $gross = (float) $qurban->meatYields->where('status', 'gross')->sum('weigh');
-            $gross = $gross < $net ? $net : $gross;
-            $effectiveWeigh = $net > 0 ? $net : $gross;
-            $oneThird = $effectiveWeigh / 3;
+            $bone = (float) $qurban->meatYields->where('status', 'bone')->sum('weigh');
+            $meat = (float) $qurban->meatYields->where('status', 'meat')->sum('weigh');
+            $meat = $meat < $bone ? $bone : $meat;
+            $oneThird = $meat / 3;
             $oneThirdTotalPax = max(1, $qurban->participants->count());
             $oneThirdPortionPerPax = $oneThird / $oneThirdTotalPax;
 
@@ -133,9 +133,8 @@ class MeatYieldController extends Controller
                 'qurban_number' => $qurban->qurban_number,
                 'qurban_type' => $qurban->qurban_type,
                 'participant_count' => $qurban->participants->count(),
-                'gross' => round($gross, 2),
-                'net' => round($net, 2),
-                'effective_weight' => round($effectiveWeigh, 2),
+                'meat' => round($meat, 2),
+                'bone' => round($bone, 2),
                 'one_third' => $oneThird,
                 'one_third_pax' => $oneThirdTotalPax,
                 'one_third_portion_per_pax' => $oneThirdPortionPerPax,
@@ -163,7 +162,7 @@ class MeatYieldController extends Controller
 
         $validated = $request->validate([
             'weigh' => ['required', 'numeric', 'min:0.01'],
-            'status' => ['required', 'in:gross,net'],
+            'status' => ['required', 'in:meat,bone,insider,skin,head,feet'],
         ]);
 
         $nextSequence = (int) MeatYield::query()
@@ -202,6 +201,7 @@ class MeatYieldController extends Controller
         $validated = $request->validate([
             'accumulate_cows_yield_meat' => ['required', 'boolean'],
             'total_pax_distribution' => ['required', 'integer', 'min:1'],
+            'display_meat_yield_summary_public_report' => ['required', 'boolean'],
         ]);
 
         $event->update($validated);

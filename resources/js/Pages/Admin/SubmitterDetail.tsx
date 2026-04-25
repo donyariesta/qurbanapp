@@ -23,6 +23,7 @@ type ParticipantRecord = {
 type Option = {
     value: number | string;
     label: string;
+    is_full?: boolean;
 };
 
 interface SubmitterDetailProps extends Record<string, unknown> {
@@ -168,6 +169,9 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
     const totalPaid = Number(paymentSummary.total_paid || 0);
     const isSurplus = (totalOwed - totalPaid) < 0;
     const outstanding = Math.abs(totalOwed - totalPaid);
+    const qurbanSelectOptions = editingId
+        ? qurbanOptions
+        : qurbanOptions.filter((option) => !option.is_full);
 
     return (
         <AuthenticatedLayout
@@ -436,7 +440,7 @@ export default function SubmitterDetail({ auth, submitter, participants, payment
                                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 <option value="">Pilih Hewan Qurban</option>
-                                {qurbanOptions.map((option) => (
+                                {qurbanSelectOptions.map((option) => (
                                     <option key={option.value} value={String(option.value)}>
                                         {option.label}
                                     </option>

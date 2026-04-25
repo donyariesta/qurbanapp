@@ -20,9 +20,9 @@ class DevSystemAdminSeeder extends Seeder
             return;
         }
 
-        $username = env('DEV_SYSTEM_ADMIN_USERNAME', 'dev-admin');
+        $username = env('DEV_SYSTEM_ADMIN_USERNAME', 'admin');
         $email = env('DEV_SYSTEM_ADMIN_EMAIL', 'dev-admin@example.com');
-        $password = env('DEV_SYSTEM_ADMIN_PASSWORD', 'dev-admin-password');
+        $password = env('DEV_SYSTEM_ADMIN_PASSWORD', 'admin123');
 
         User::query()->updateOrCreate(
             ['username' => $username],

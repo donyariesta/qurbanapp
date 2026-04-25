@@ -18,6 +18,7 @@ class Transaction extends Model
         'date_of_payment',
         'reference_id',
         'reference_type',
+        'notes',
     ];
 
     protected $casts = [

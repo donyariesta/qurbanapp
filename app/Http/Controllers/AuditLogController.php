@@ -19,7 +19,9 @@ class AuditLogController extends Controller
             'record_id' => ['nullable', 'string', 'max:255'],
             'ip_address' => ['nullable', 'string', 'max:45'],
             'user_agent' => ['nullable', 'string', 'max:1000'],
+            'per_page' => ['nullable', 'integer', 'in:50,100,500,1000,2000'],
         ]);
+        $perPage = (int) ($validated['per_page'] ?? 50);
 
         $logs = AuditLog::query()
             ->with('user:id,name,username')
@@ -30,7 +32,7 @@ class AuditLogController extends Controller
             ->when($validated['ip_address'] ?? null, fn ($query, $value) => $query->where('ip_address', 'like', "%{$value}%"))
             ->when($validated['user_agent'] ?? null, fn ($query, $value) => $query->where('user_agent', 'like', "%{$value}%"))
             ->orderByDesc('event_timestamp')
-            ->limit(300)
+            ->limit($perPage)
             ->get()
             ->map(fn (AuditLog $log) => [
                 'audit_log_id' => $log->audit_log_id,
@@ -54,6 +56,7 @@ class AuditLogController extends Controller
                 'record_id' => $validated['record_id'] ?? '',
                 'ip_address' => $validated['ip_address'] ?? '',
                 'user_agent' => $validated['user_agent'] ?? '',
+                'per_page' => (string) $perPage,
             ],
             'users' => User::query()
                 ->orderBy('name')

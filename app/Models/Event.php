@@ -16,12 +16,14 @@ class Event extends Model
         'year',
         'accumulate_cows_yield_meat',
         'total_pax_distribution',
+        'display_meat_yield_summary_public_report',
     ];
 
     protected $casts = [
         'year' => 'integer',
         'accumulate_cows_yield_meat' => 'boolean',
         'total_pax_distribution' => 'integer',
+        'display_meat_yield_summary_public_report' => 'boolean',
     ];
 
     public function submitters(): HasMany

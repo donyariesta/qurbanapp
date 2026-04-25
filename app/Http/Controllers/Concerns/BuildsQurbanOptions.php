@@ -58,11 +58,15 @@ trait BuildsQurbanOptions
         return Qurban::query()
             ->when($eventId, fn ($query) => $query->where('event_id', $eventId))
             ->with('event')
+            ->withCount('participants')
             ->orderBy('qurban_number')
             ->get()
             ->map(fn (Qurban $qurban) => [
                 'value' => $qurban->qurban_id,
                 'label' => "Qurban #{$qurban->qurban_number} - {$qurban->qurban_type} ({$qurban->event?->year})",
+                'quota' => $qurban->quota,
+                'participants_count' => (int) $qurban->participants_count,
+                'is_full' => (int) $qurban->participants_count >= (int) $qurban->quota,
             ])
             ->all();
     }

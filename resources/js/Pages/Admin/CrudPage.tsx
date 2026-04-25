@@ -12,6 +12,7 @@ import { FormEvent, useMemo, useState } from 'react';
 type Option = {
     value: number | string;
     label: string;
+    is_full?: boolean;
 };
 
 type Field = {
@@ -300,6 +301,8 @@ export default function CrudPage({
                             }
 
                             const selectOptions = selectedLabelMap[field.name] ?? [];
+                            const availableSelectOptions =
+                                field.name === 'qurban_id' && !editingId ? selectOptions.filter((option) => !option.is_full) : selectOptions;
 
                             return (
                                 <div key={field.name} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
@@ -318,7 +321,7 @@ export default function CrudPage({
                                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         >
                                             <option value="">Select {field.label}</option>
-                                            {selectOptions.map((option) => (
+                                            {availableSelectOptions.map((option) => (
                                                 <option key={`${field.name}-${option.value}`} value={String(option.value)}>
                                                     {option.label}
                                                 </option>

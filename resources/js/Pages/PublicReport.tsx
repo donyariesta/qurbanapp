@@ -11,8 +11,12 @@ interface PublicReportProps extends Record<string, unknown> {
     selectedYear: number | null;
     participantFilters: {
         participant_type: string;
-        participant_qurban_number: string;
+        participant_qurban_id: string;
     };
+    participantQurbanOptions: Array<{
+        value: string;
+        label: string;
+    }>;
     summary: {
         participant_count: number;
         qurban_count: number;
@@ -41,6 +45,12 @@ interface PublicReportProps extends Record<string, unknown> {
         notes: string | null;
         total: string;
     }>;
+    showMeatYieldSummary: boolean;
+    meatYieldSummary: {
+        cows: { effective_total: number; two_third_total: number; two_third_portion_per_pax: number };
+        sheeps: { effective_total: number; two_third_total: number; two_third_portion_per_pax: number };
+        total_pax_distribution: number;
+    } | null;
 }
 
 function animalIcon(linked: string, type: string) {
@@ -68,7 +78,7 @@ function statusBadge(status: string) {
     );
 }
 
-export default function PublicReport({ auth, years, selectedYear, participantFilters, summary, participants, procurements }: PageProps<PublicReportProps>) {
+export default function PublicReport({ auth, years, selectedYear, participantFilters, participantQurbanOptions, summary, participants, procurements, showMeatYieldSummary, meatYieldSummary }: PageProps<PublicReportProps>) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -249,7 +259,7 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                                 {
                                                     year: selectedYear ?? '',
                                                     participant_type: event.target.value,
-                                                    participant_qurban_number: participantFilters.participant_qurban_number,
+                                                    participant_qurban_id: participantFilters.participant_qurban_id,
                                                 },
                                                 { preserveScroll: true, replace: true },
                                             )
@@ -263,27 +273,49 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                 </div>
                                 <div className="relative min-w-0 flex-1 sm:min-w-[14rem]">
                                     <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                        <i className="fa-solid fa-magnifying-glass text-sm" aria-hidden />
+                                        <i className="fa-solid fa-list text-sm" aria-hidden />
                                     </span>
-                                    <input
-                                        type="search"
-                                        inputMode="numeric"
-                                        value={participantFilters.participant_qurban_number}
-                                        placeholder="Search by qurban number..."
+                                    <select
+                                        value={participantFilters.participant_qurban_id}
                                         onChange={(event) =>
                                             router.get(
                                                 route('reports.index'),
                                                 {
                                                     year: selectedYear ?? '',
                                                     participant_type: participantFilters.participant_type,
-                                                    participant_qurban_number: event.target.value,
+                                                    participant_qurban_id: event.target.value,
                                                 },
                                                 { preserveScroll: true, replace: true },
                                             )
                                         }
                                         className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-qurban-600 focus:outline-none focus:ring-1 focus:ring-qurban-600"
-                                    />
+                                    >
+                                        <option value="">Filter Nomor Qurban</option>
+                                        {participantQurbanOptions.map((option) => (
+                                            <option key={option.label} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        window.open(
+                                            route('reports.index', {
+                                                year: selectedYear ?? '',
+                                                participant_type: participantFilters.participant_type,
+                                                participant_qurban_id: participantFilters.participant_qurban_id,
+                                                download_participants_csv: 1,
+                                            }),
+                                            '_blank',
+                                        )
+                                    }
+                                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    <i className="fa-solid fa-file-csv" aria-hidden />
+                                    Download CSV
+                                </button>
                             </div>
                         </div>
 
@@ -444,6 +476,31 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                             )}
                         </div>
                     </section>
+
+                    {showMeatYieldSummary && meatYieldSummary ? (
+                        <section className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm ring-1 ring-gray-100">
+                            <div className="border-b border-gray-100 p-4 sm:p-5">
+                                <h2 className="inline-flex items-center gap-2 text-lg font-semibold text-gray-900">
+                                    <i className="fa-solid fa-weight-hanging text-qurban-800" aria-hidden />
+                                    Ringkasan Hasil Daging
+                                </h2>
+                            </div>
+                            <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
+                                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                                    <p className="font-semibold text-gray-900">Sapi</p>
+                                    <p className="mt-2">Total efektif: {meatYieldSummary.cows.effective_total} kg</p>
+                                    <p>2/3 total: {meatYieldSummary.cows.two_third_total} kg</p>
+                                    <p>Per pax ({meatYieldSummary.total_pax_distribution} pax): {meatYieldSummary.cows.two_third_portion_per_pax} kg</p>
+                                </div>
+                                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                                    <p className="font-semibold text-gray-900">Domba</p>
+                                    <p className="mt-2">Total efektif: {meatYieldSummary.sheeps.effective_total} kg</p>
+                                    <p>2/3 total: {meatYieldSummary.sheeps.two_third_total} kg</p>
+                                    <p>Per pax ({meatYieldSummary.total_pax_distribution} pax): {meatYieldSummary.sheeps.two_third_portion_per_pax} kg</p>
+                                </div>
+                            </div>
+                        </section>
+                    ) : null}
                 </div>
 
                 <ReportFooterArt />

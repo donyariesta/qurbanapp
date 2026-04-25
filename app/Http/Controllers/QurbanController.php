@@ -104,6 +104,7 @@ class QurbanController extends Controller
     private function validateData(Request $request, ?Qurban $qurban = null): array
     {
         $eventId = $this->selectedEventId();
+        $qurbanType = $request->input('qurban_type');
 
         return $request->validate([
             'qurban_number' => [
@@ -111,7 +112,9 @@ class QurbanController extends Controller
                 'integer',
                 'min:1',
                 Rule::unique('qurbans', 'qurban_number')
-                    ->where('event_id', $eventId)
+                    ->where(fn ($query) => $query
+                        ->where('event_id', $eventId)
+                        ->where('qurban_type', $qurbanType))
                     ->ignore($qurban?->qurban_id, 'qurban_id'),
             ],
             'qurban_type' => ['required', Rule::in(['Cow', 'Sheep'])],

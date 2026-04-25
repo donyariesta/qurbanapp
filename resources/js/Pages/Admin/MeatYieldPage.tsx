@@ -13,8 +13,8 @@ type QurbanYield = {
     qurban_number: number;
     qurban_type: 'Cow' | 'Sheep';
     participant_count: number;
-    gross: number;
-    net: number;
+    meat: number;
+    bone: number;
     one_third: number;
     one_third_pax: number;
     one_third_portion_per_pax: number | null;
@@ -22,7 +22,7 @@ type QurbanYield = {
         meat_yield_id: number;
         weighing_sequence: number;
         weigh: number;
-        status: 'gross' | 'net';
+        status: 'meat' | 'bone' | 'insider' | 'skin' | 'head' | 'feet';
         created_at: string;
     }>;
 };
@@ -31,8 +31,8 @@ interface MeatYieldPageProps extends Record<string, unknown> {
     summary: {
         total_pax: number;
         cows?: {
-            gross_total: number;
-            net_total: number;
+            meat_total: number;
+            bone_total: number;
             two_third_total: number;
             two_third_portion_per_pax: number;
             one_third_total: number;
@@ -40,8 +40,8 @@ interface MeatYieldPageProps extends Record<string, unknown> {
             one_third_portion_per_pax: number;
         };
         sheeps?: {
-            gross_total: number;
-            net_total: number;
+            meat_total: number;
+            bone_total: number;
             two_third_total: number;
             two_third_portion_per_pax: number;
             distribution_rows: Array<{
@@ -55,6 +55,7 @@ interface MeatYieldPageProps extends Record<string, unknown> {
     config: {
         accumulate_cows_yield_meat: boolean;
         total_pax_distribution: number;
+        display_meat_yield_summary_public_report: boolean;
     };
 }
 
@@ -64,11 +65,12 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
     const [detailQurban, setDetailQurban] = useState<QurbanYield | null>(null);
     const weighingForm = useForm({
         weigh: '',
-        status: 'net' as 'gross' | 'net',
+        status: 'meat' as 'meat' | 'bone' | 'insider' | 'skin' | 'head' | 'feet',
     });
     const configForm = useForm({
         accumulate_cows_yield_meat: config.accumulate_cows_yield_meat,
         total_pax_distribution: String(config.total_pax_distribution ?? 1),
+        display_meat_yield_summary_public_report: config.display_meat_yield_summary_public_report,
     });
 
     return (
@@ -91,8 +93,8 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="rounded-lg bg-white p-6 shadow-sm">
                                     <h3 className="font-semibold text-gray-900">Distribusi Daging Sapi</h3>
-                                    <p className="mt-2 text-sm text-gray-700">Kotor: <b>{summary.cows?.gross_total ?? 0} kg</b></p>
-                                    <p className="text-sm text-gray-700">Bersih: <b>{summary.cows?.net_total ?? 0} kg</b></p>
+                                    <p className="mt-2 text-sm text-gray-700">Daging: <b>{summary.cows?.meat_total ?? 0} kg</b></p>
+                                    <p className="text-sm text-gray-700">Tulang: <b>{summary.cows?.bone_total ?? 0} kg</b></p>
                                     {config.accumulate_cows_yield_meat && (
                                         <>
                                             <p className="text-sm text-gray-700">Distribusi 1/3 Bagian: <b>{summary.cows?.one_third_portion_per_pax ?? 0} kg</b> per pax ({summary.cows?.one_third_total ?? 0} kg / {summary.cows?.one_third_pax_total ?? 0} peserta)</p>
@@ -102,8 +104,8 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                 </div>
                                 <div className="rounded-lg bg-white p-6 shadow-sm">
                                     <h3 className="font-semibold text-gray-900">Distribusi Daging Domba</h3>
-                                    <p className="mt-2 text-sm text-gray-700">Kotor: <b>{summary.sheeps?.gross_total ?? 0} kg</b></p>
-                                    <p className="text-sm text-gray-700">Bersih: <b>{summary.sheeps?.net_total ?? 0} kg</b></p>
+                                    <p className="mt-2 text-sm text-gray-700">Daging: <b>{summary.sheeps?.meat_total ?? 0} kg</b></p>
+                                    <p className="text-sm text-gray-700">Tulang: <b>{summary.sheeps?.bone_total ?? 0} kg</b></p>
                                     <p className="text-sm text-gray-700">Distribusi 2/3 Bagian: <b>{summary.sheeps?.two_third_portion_per_pax ?? 0} kg</b> per pax ({summary.sheeps?.two_third_total ?? 0} kg / {summary.total_pax} pax)</p>
                                     <p className="text-sm text-gray-700 pt-4">
                                         <b>Distribusi 1/3 Bagian:</b>
@@ -125,8 +127,8 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                         <thead className="bg-gray-50">
                                             <tr>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Qurban</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Bersih</th>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Kotor</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Tulang</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Daging</th>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Distribusi 1/3 Bagian</th>
                                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Actions</th>
                                             </tr>
@@ -135,8 +137,8 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                             {qurbans.map((qurban) => (
                                                 <tr key={qurban.qurban_id}>
                                                     <td className="px-4 py-3 text-sm text-gray-700">{formatQurban(qurban.qurban_type, qurban.qurban_number)}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.net} kg</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.gross} kg</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.bone} kg</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{qurban.meat} kg</td>
                                                     <td className="px-4 py-3 text-sm text-gray-700">
                                                         <b>{qurban.one_third_portion_per_pax ?? 'None'}</b> <small>{qurban.qurban_type === 'Cow' && `(${qurban.one_third} / ${qurban.one_third_pax} peserta)`}</small>
                                                     </td>
@@ -206,6 +208,13 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                         className="block w-full"
                                     />
                                 </div>
+                                <label className="inline-flex items-center gap-2">
+                                    <Checkbox
+                                        checked={configForm.data.display_meat_yield_summary_public_report}
+                                        onChange={(e) => configForm.setData('display_meat_yield_summary_public_report', e.target.checked)}
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">Tampilkan ringkasan hasil daging pada public report</span>
+                                </label>
                                 <PrimaryButton disabled={configForm.processing}>Simpan Config</PrimaryButton>
                             </form>
                         </div>
@@ -225,7 +234,7 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                 onSuccess: () => {
                                     setActiveQurban(null);
                                     weighingForm.reset();
-                                    weighingForm.setData('status', 'net');
+                                    weighingForm.setData('status', 'meat');
                                 },
                             });
                         }}
@@ -236,9 +245,13 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                         </div>
                         <div>
                             <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
-                            <div className="flex gap-3">
-                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'gross' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'gross')}>Kotor</button>
-                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'net' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'net')}>Bersih</button>
+                            <div className="flex gap-3 flex-wrap">
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'meat' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'meat')}>Daging</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'bone' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'bone')}>Tulang</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'insider' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'insider')}>Isi</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'skin' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'skin')}>Kulit</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'head' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'head')}>Kepala</button>
+                                <button type="button" className={`rounded-md px-3 py-2 text-sm ${weighingForm.data.status === 'feet' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`} onClick={() => weighingForm.setData('status', 'feet')}>Kaki</button>
                             </div>
                         </div>
                         <PrimaryButton disabled={weighingForm.processing}>Simpan Bobot</PrimaryButton>

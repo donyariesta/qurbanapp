@@ -26,6 +26,7 @@ interface AuditLogPageProps extends Record<string, unknown> {
         record_id: string;
         ip_address: string;
         user_agent: string;
+        per_page: string;
     };
     users: Array<{ value: string; label: string }>;
     logs: AuditLog[];
@@ -80,6 +81,16 @@ export default function AuditLogPage({ auth, filters, users, logs }: PageProps<A
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-gray-700">User Agent</label>
                                 <TextInput className="block w-full" value={form.user_agent} onChange={(e) => setForm((prev) => ({ ...prev, user_agent: e.target.value }))} />
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700">Rows</label>
+                                <select value={form.per_page} onChange={(e) => setForm((prev) => ({ ...prev, per_page: e.target.value }))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    {[50, 100, 500, 1000, 2000].map((size) => (
+                                        <option key={size} value={String(size)}>
+                                            {size}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="md:col-span-3">
                                 <PrimaryButton>Filter Logs</PrimaryButton>
