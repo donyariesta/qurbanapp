@@ -25,7 +25,7 @@ class SubmitterController extends Controller
     {
         $eventId = $this->selectedEventId();
 
-        return Inertia::render('Admin/CrudPage', [
+        return Inertia::render('Admin/SubmitterPage', [
             'title' => 'Peserta',
             'singular' => 'Peserta',
             'routeName' => 'submitters',
@@ -54,6 +54,11 @@ class SubmitterController extends Controller
                     'phone_number' => $submitter->phone_number,
                     'qurban_id' => '',
                     'add_as_participant' => 1,
+                    'participants' => $submitter->participants->map(fn (Participant $participant) => [
+                        'full_name' => $participant->full_name,
+                        'qurban_label' => Formatter::qurbanName($participant->qurban->qurban_number, $participant->qurban?->qurban_type),
+                        'qurban_type' => $participant->qurban?->qurban_type,
+                    ])->all(),
                 ])
                 ->all(),
             'options' => [

@@ -208,14 +208,18 @@ export default function MeatYieldPage({ auth, summary, qurbans, config }: PagePr
                                         className="block w-full"
                                     />
                                 </div>
-                                <label className="inline-flex items-center gap-2">
-                                    <Checkbox
-                                        checked={configForm.data.display_meat_yield_summary_public_report}
-                                        onChange={(e) => configForm.setData('display_meat_yield_summary_public_report', e.target.checked)}
-                                    />
-                                    <span className="text-sm font-medium text-gray-700">Tampilkan ringkasan hasil daging pada public report</span>
-                                </label>
-                                <PrimaryButton disabled={configForm.processing}>Simpan Config</PrimaryButton>
+                                <div className="max-w-sm">
+                                    <label className="inline-flex items-center gap-2">
+                                        <Checkbox
+                                            checked={configForm.data.display_meat_yield_summary_public_report}
+                                            onChange={(e) => configForm.setData('display_meat_yield_summary_public_report', e.target.checked)}
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Tampilkan ringkasan hasil daging pada public report</span>
+                                    </label>
+                                </div>
+                                <div className="max-w-sm">
+                                    <PrimaryButton disabled={configForm.processing}>Simpan Config</PrimaryButton>
+                                </div>
                             </form>
                         </div>
                     )}

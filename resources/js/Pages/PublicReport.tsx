@@ -37,6 +37,7 @@ interface PublicReportProps extends Record<string, unknown> {
         required_amount: string;
         paid_amount: string;
         payment_status: string;
+        qurban_independent: boolean;
     }>;
     procurements: Array<{
         item: string;
@@ -64,7 +65,20 @@ function animalIcon(linked: string, type: string) {
     return <i className="fa-solid fa-paw text-gray-500" aria-hidden />;
 }
 
-function statusBadge(status: string) {
+function statusBadge(status: string, isIndependent: boolean) {
+    if (isIndependent) {
+        return (
+            <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                    'bg-blue-300 text-blue-800'
+                }`}
+            >
+                <i className={`fa-regular fa-circle-check`} aria-hidden />
+                Mandiri
+            </span>
+        );
+    }
+
     const paid = status === 'Paid';
     return (
         <span
@@ -353,9 +367,9 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                                         {participant.linked_qurban}
                                                     </span>
                                                 </td>
-                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">{formatRupiah(participant.paid_amount)}</td>
-                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">{formatRupiah(participant.required_amount)}</td>
-                                                <td className="px-4 py-3">{statusBadge(participant.payment_status)}</td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">{!participant.qurban_independent && formatRupiah(participant.paid_amount)}</td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">{!participant.qurban_independent && formatRupiah(participant.required_amount)}</td>
+                                                <td className="px-4 py-3">{statusBadge(participant.payment_status, participant.qurban_independent)}</td>
                                             </tr>
                                         ))
                                     )}
@@ -372,7 +386,7 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                 participants.map((participant, index) => (
                                     <div
                                         key={`${participant.name}-${participant.linked_qurban}-m-${index}`}
-                                        className="flex gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3"
+                                        className={`flex gap-3 rounded-xl border ${participant.qurban_type === 'Cow' ? 'border-lime-100 bg-lime-50' : 'border-orange-100 bg-orange-50'} p-3`}
                                     >
                                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100">
                                             {animalIcon(participant.linked_qurban, participant.qurban_type)}
@@ -385,9 +399,9 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                                 </div>
                                             </div>
                                             <div className="flex items-start justify-between gap-2">
-                                                <p className="text-sm font-semibold text-qurban-800">{formatRupiah(participant.required_amount)}</p>
+                                                <p className="text-sm font-semibold text-qurban-800">{!participant.qurban_independent && formatRupiah(participant.required_amount)}</p>
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    {statusBadge(participant.payment_status)}
+                                                    {statusBadge(participant.payment_status, participant.qurban_independent)}
                                                 </div>
                                             </div>
                                         </div>

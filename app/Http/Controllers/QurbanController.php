@@ -31,12 +31,14 @@ class QurbanController extends Controller
                 ]],
                 ['name' => 'qurban_shared_price', 'label' => 'Harga per Peserta', 'type' => 'number', 'required' => true, 'step' => '0.01'],
                 ['name' => 'quota', 'label' => 'Quota', 'type' => 'number', 'required' => true],
+                ['name' => 'independent', 'label' => 'Independent', 'type' => 'checkbox', 'required' => false],
             ],
             'columns' => [
                 ['key' => 'qurban_number', 'label' => 'Nomor Qurban'],
                 ['key' => 'qurban_type', 'label' => 'Jenis Hewan'],
                 ['key' => 'qurban_shared_price', 'label' => 'Harga per Peserta'],
                 ['key' => 'quota', 'label' => 'Quota'],
+                ['key' => 'independent', 'label' => 'Independent'],
             ],
             'records' => Qurban::query()
                 ->with('event')
@@ -49,6 +51,7 @@ class QurbanController extends Controller
                     'qurban_type' => $qurban->qurban_type,
                     'qurban_shared_price' => $qurban->qurban_shared_price,
                     'quota' => $qurban->quota,
+                    'independent' => $qurban->independent,
                 ])
                 ->all(),
             'options' => [],
@@ -120,6 +123,7 @@ class QurbanController extends Controller
             'qurban_type' => ['required', Rule::in(['Cow', 'Sheep'])],
             'qurban_shared_price' => ['required', 'numeric', 'min:0'],
             'quota' => ['required', 'integer', 'min:1'],
+            'independent' => ['nullable', 'boolean'],
         ]);
     }
 }

@@ -108,6 +108,7 @@ class PublicReportController extends Controller
                         'name' => $participant->full_name,
                         'address' => $participant->address,
                         'qurban_type' => $participant->qurban?->qurban_type,
+                        'qurban_independent' => $participant->qurban?->independent,
                         'qurban_number' => $participant->qurban?->qurban_number,
                         'linked_qurban' => Formatter::qurbanName($participant->qurban?->qurban_number, $participant->qurban?->qurban_type),
                         'required_amount' => number_format($requiredAmount, 2, '.', ''),

@@ -19,12 +19,14 @@ class Qurban extends Model
         'qurban_type',
         'qurban_shared_price',
         'quota',
+        'independent',
     ];
 
     protected $casts = [
         'qurban_number' => 'integer',
         'qurban_shared_price' => 'decimal:2',
         'quota' => 'integer',
+        'independent' => 'boolean',
     ];
 
     public function event(): BelongsTo
