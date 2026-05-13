@@ -1,0 +1,1 @@
+function t(i){const r=Number(i??0),n=Number.isFinite(r)?r:0;return`Rp. ${new Intl.NumberFormat("id-ID",{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(n))}`}function m(i,r){return i==="Cow"?`Sapi #${r}`:i==="Sheep"?`Domba #${r}`:`${i} #${r}`}export{m as a,t as f};

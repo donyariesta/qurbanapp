@@ -1,0 +1,1 @@
+import{j as a,x as t}from"./app-Ch01H-BI.js";function o({href:e=route("dashboard"),className:r="",imgClassName:s="h-10 w-auto sm:h-11",...n}){return a.jsx(t,{href:e,className:`inline-flex shrink-0 items-center ${r}`,children:a.jsx("img",{src:"/images/qurban-logo.png",alt:"Qurban — Manage · Share · Benefit",className:s,...n})})}export{o as Q};
