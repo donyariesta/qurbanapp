@@ -102,6 +102,7 @@ class PublicReportController extends Controller
                     $submitterPaid = (float) ($submitterPayments[$submitterId] ?? 0);
                     $participantCount = max(1, (int) ($submitterParticipantCount[$submitterId] ?? 1));
                     $paidAmount = $submitterPaid / $participantCount;
+                    $voluntaryAmount = $paidAmount - $requiredAmount;
                     $submitterOutstanding = (float) ($submitterRequired[$submitterId] ?? 0) - $submitterPaid;
 
                     return [
@@ -113,6 +114,7 @@ class PublicReportController extends Controller
                         'linked_qurban' => Formatter::qurbanName($participant->qurban?->qurban_number, $participant->qurban?->qurban_type),
                         'required_amount' => number_format($requiredAmount, 2, '.', ''),
                         'paid_amount' => number_format($paidAmount, 2, '.', ''),
+                        'voluntary_amount' => number_format(($voluntaryAmount > 0 ? $voluntaryAmount : 0), 2, '.', ''),
                         'payment_status' => $submitterOutstanding <= 0 && (float) ($submitterRequired[$submitterId] ?? 0) > 0
                             ? 'Paid'
                             : 'Pending',
@@ -168,6 +170,18 @@ class PublicReportController extends Controller
                     ->where('event_id', $event->event_id)
                     ->where('qurban_type', 'Sheep')
                     ->count(),
+                'total_voluntary_received' => number_format(
+                    (float) $participants->sum('voluntary_amount'),
+                    2,
+                    '.',
+                    ''
+                ),
+                'total_fee_received' => number_format(
+                    (float) $participants->sum('paid_amount') - $participants->sum('voluntary_amount'),
+                    2,
+                    '.',
+                    ''
+                ),
                 'total_cash_received' => number_format(
                     (float) Transaction::query()
                         ->where('event_id', $event->event_id)

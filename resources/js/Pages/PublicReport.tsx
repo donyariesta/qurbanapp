@@ -25,6 +25,8 @@ interface PublicReportProps extends Record<string, unknown> {
         qurban_count_cow: number;
         qurban_count_sheep: number;
         total_cash_received: number | string;
+        total_fee_received: number | string;
+        total_voluntary_received: number | string;
         total_spent: number | string;
         remaining_cash: number | string;
     };
@@ -246,7 +248,21 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Ringkasan Keuangan</p>
-                                    <p className="mt-2 text-sm text-gray-700">Diterima: {formatRupiah(summary.total_cash_received)}</p>
+                                    <p className="mt-2 text-sm text-gray-700">Diterima:</p>
+                                    <div className="text-xs text-gray-700 rounded-xl border border-teal-100/80 bg-white p-2 shadow-sm mb-2">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <p>pendaftaran</p>
+                                            <p>+ {formatRupiah(summary.total_fee_received)}</p>
+                                        </div>
+                                        <div className="flex items-start justify-between gap-2">
+                                            <p>infaq</p>
+                                            <p>+ {formatRupiah(summary.total_voluntary_received)}</p>
+                                        </div>
+                                        <div className="flex items-start justify-between gap-2 font-bold">
+                                            <p>Total</p>
+                                            <p>+ {formatRupiah(summary.total_cash_received)}</p>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-gray-700">Dibelanjakan: {formatRupiah(summary.total_spent)}</p>
                                     <p className="mt-2 text-sm font-bold text-qurban-800">Saldo sisa: {formatRupiah(summary.remaining_cash)}</p>
                                 </div>
@@ -393,13 +409,14 @@ export default function PublicReport({ auth, years, selectedYear, participantFil
                                         </div>
                                         <div className="min-w-0 flex-1 space-y-2">
                                             <div className="">
-                                                <p className="text-xs text-gray-500">{participant.linked_qurban}</p>
-                                                <div className="flex items-start justify-between gap-2">
+                                                <p className="text-xs text-gray-600">{participant.linked_qurban}</p>
+                                                <div>
                                                     <p className="font-semibold text-gray-900">{participant.name}</p>
+                                                    <p className="text-xs text-gray-600"><i className="fa-solid fa-home text-gray-600 fa-xs" aria-hidden="true" /> {participant.address}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start justify-between gap-2">
-                                                <p className="text-sm font-semibold text-qurban-800">{!participant.qurban_independent && formatRupiah(participant.required_amount)}</p>
+                                                <p className="text-sm font-semibold text-qurban-800">{!participant.qurban_independent && formatRupiah(participant.payment_status === 'Paid' ? participant.paid_amount : participant.required_amount)}</p>
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                                     {statusBadge(participant.payment_status, participant.qurban_independent)}
                                                 </div>

@@ -65,14 +65,14 @@ class MeatYieldController extends Controller
     private function getQurbansMeatYieldsSummary(int $eventID, $rows, $totalPax, $accumulateCows)
     {
         $cowRows = $rows->where('qurban_type', 'Cow');
-        $cowsEffectiveTotal = (float) $cowRows->sum('meat');
+        $cowsMeatTotal = (float) $cowRows->sum('meat');
 
         $sheepRows = $rows->where('qurban_type', 'Sheep');
-        $sheepsEffectiveTotal = (float) $sheepRows->sum('meat');
-        $sheepsTwoThirdTotal = ($sheepsEffectiveTotal * 2) / 3;
+        $sheepsMeatTotal = (float) $sheepRows->sum('meat');
+        $sheepsTwoThirdTotal = ($sheepsMeatTotal * 2) / 3;
 
-        $cowsOneThirdTotal = $cowsEffectiveTotal / 3;
-        $cowsTwoThirdTotal = ($cowsEffectiveTotal * 2) / 3;
+        $cowsOneThirdTotal = $cowsMeatTotal / 3;
+        $cowsTwoThirdTotal = ($cowsMeatTotal * 2) / 3;
         $cowsParticipantCount = Participant::query()
             ->join('qurbans', 'participants.qurban_id', '=', 'qurbans.qurban_id')
             ->where('participants.event_id', $eventID)
